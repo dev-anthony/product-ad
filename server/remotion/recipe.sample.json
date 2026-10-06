@@ -1,0 +1,28 @@
+{
+  "video": {
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "background": { "from": "#0f172a", "to": "#1e293b" }
+  },
+  "assets": { "dashboard.png": { "w": 1366, "h": 768 } },
+  "targets": {
+    "dashboard.png": {
+      "create-project": { "x": 0.117, "y": 0.727, "w": 0.128, "h": 0.063 }
+    }
+  },
+  "scenes": [
+    {
+      "id": "scene-1",
+      "source": "dashboard.png",
+      "duration": 7,
+      "camera": { "from": "full", "to": "create-project", "start": 2, "end": 4 },
+      "actions": [
+        { "type": "highlight", "target": "create-project", "at": 2.5, "duration": 2 },
+        { "type": "cursor_move", "target": "create-project", "at": 4, "duration": 1 },
+        { "type": "click", "target": "create-project", "at": 5 }
+      ],
+      "voiceover": "Join the waitlist today."
+    }
+  ]
+}
