@@ -1,0 +1,135 @@
+{
+  "filename": "1791331630694-hoopsIQ.png",
+  "width": 1290,
+  "height": 681,
+  "elements": [
+    {
+      "id": "6",
+      "text": "6",
+      "x": 0.2147,
+      "y": 0.0514,
+      "w": 0.0217,
+      "h": 0.0411
+    },
+    {
+      "id": "features",
+      "text": "Features",
+      "x": 0.4008,
+      "y": 0.0646,
+      "w": 0.0457,
+      "h": 0.0147
+    },
+    {
+      "id": "pricing",
+      "text": "Pricing",
+      "x": 0.4667,
+      "y": 0.0631,
+      "w": 0.0357,
+      "h": 0.022
+    },
+    {
+      "id": "about",
+      "text": "About",
+      "x": 0.5225,
+      "y": 0.0646,
+      "w": 0.0318,
+      "h": 0.0147
+    },
+    {
+      "id": "ep",
+      "text": "«> ep",
+      "x": 0.6791,
+      "y": 0.0396,
+      "w": 0.107,
+      "h": 0.0646
+    },
+    {
+      "id": "wo",
+      "text": "wo",
+      "x": 0.7085,
+      "y": 0.3524,
+      "w": 0.0178,
+      "h": 0.0264
+    },
+    {
+      "id": "predict-smarter-for",
+      "text": "Predict smarter for",
+      "x": 0.0744,
+      "y": 0.3818,
+      "w": 0.4023,
+      "h": 0.0646
+    },
+    {
+      "id": "every-basketball",
+      "text": "every basketball",
+      "x": 0.0729,
+      "y": 0.4934,
+      "w": 0.3488,
+      "h": 0.0793
+    },
+    {
+      "id": "a",
+      "text": "A",
+      "x": 0.7163,
+      "y": 0.4993,
+      "w": 0.0651,
+      "h": 0.0896
+    },
+    {
+      "id": "game",
+      "text": "game",
+      "x": 0.0736,
+      "y": 0.6197,
+      "w": 0.1147,
+      "h": 0.0631
+    },
+    {
+      "id": "ll",
+      "text": "LL",
+      "x": 0.6101,
+      "y": 0.5991,
+      "w": 0.245,
+      "h": 0.1072
+    },
+    {
+      "id": "get-real-time-predictions-live",
+      "text": "Get real-time predictions, live analysis, accurate stats, and",
+      "x": 0.0721,
+      "y": 0.7283,
+      "w": 0.4078,
+      "h": 0.0279
+    },
+    {
+      "id": "item",
+      "text": "{",
+      "x": 0.7915,
+      "y": 0.7034,
+      "w": 0.0047,
+      "h": 0.022
+    },
+    {
+      "id": "guaranteed-hedges-to-place-sur",
+      "text": "guaranteed hedges to place surer bets.",
+      "x": 0.0721,
+      "y": 0.7709,
+      "w": 0.2744,
+      "h": 0.0264
+    },
+    {
+      "id": "item-2",
+      "text": "@",
+      "x": 0.769,
+      "y": 0.7518,
+      "w": 0.0372,
+      "h": 0.0558
+    },
+    {
+      "id": "item-3",
+      "text": "=",
+      "x": 0.6829,
+      "y": 0.8399,
+      "w": 0.0496,
+      "h": 0.0514
+    }
+  ]
+}
