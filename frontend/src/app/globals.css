@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b0b0c;
+  --foreground: #eceff1;
+
+  --bg: #0b0b0c;
+  --panel: #141416;
+  --panel-2: #18181b;
+  --line: #222225;
+  --field: #1c1c1f;
+  --edge: #2a2a2e;
+  --dim: #8a8a92;
+
+  --accent: #f5c518;
+  --effect: #7b3fe4;
+  --clip: #3b4252;
+  --clip-on: #2f5fd0;
+  --voice: #2f8f7c;
+  --music: #3b8f6a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-poppins);
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-poppins), "Segoe UI", Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #33333a;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
