@@ -1,0 +1,271 @@
+{
+  "filename": "1791366339528-ProdCollab.png",
+  "width": 1299,
+  "height": 673,
+  "elements": [
+    {
+      "id": "prodcollab",
+      "text": "© ProdCollab",
+      "x": 0.0808,
+      "y": 0.0282,
+      "w": 0.1062,
+      "h": 0.0357
+    },
+    {
+      "id": "howitworks",
+      "text": "Howitworks",
+      "x": 0.4219,
+      "y": 0.0416,
+      "w": 0.0662,
+      "h": 0.0163
+    },
+    {
+      "id": "download",
+      "text": "Download",
+      "x": 0.5112,
+      "y": 0.0431,
+      "w": 0.0531,
+      "h": 0.0149
+    },
+    {
+      "id": "item",
+      "text": "©",
+      "x": 0.7452,
+      "y": 0.0416,
+      "w": 0.0108,
+      "h": 0.0193
+    },
+    {
+      "id": "shared-new-work",
+      "text": "shared new work",
+      "x": 0.8291,
+      "y": 0.266,
+      "w": 0.0793,
+      "h": 0.0134
+    },
+    {
+      "id": "now-drum-arrangement-midnight",
+      "text": "Now drum arrangement - Midnight",
+      "x": 0.8006,
+      "y": 0.2719,
+      "w": 0.1432,
+      "h": 0.0446
+    },
+    {
+      "id": "different",
+      "text": "Different",
+      "x": 0.0839,
+      "y": 0.2927,
+      "w": 0.1655,
+      "h": 0.055
+    },
+    {
+      "id": "studio-daw",
+      "text": "studio/DAW",
+      "x": 0.0824,
+      "y": 0.3581,
+      "w": 0.2379,
+      "h": 0.0892
+    },
+    {
+      "id": "e",
+      "text": "e",
+      "x": 0.3218,
+      "y": 0.4205,
+      "w": 0.0069,
+      "h": 0.0119
+    },
+    {
+      "id": "88-dashboard",
+      "text": "88 Dashboard",
+      "x": 0.4742,
+      "y": 0.4339,
+      "w": 0.0647,
+      "h": 0.0178
+    },
+    {
+      "id": "shared-sessions",
+      "text": "Shared sessions",
+      "x": 0.5928,
+      "y": 0.4205,
+      "w": 0.1109,
+      "h": 0.0193
+    },
+    {
+      "id": "e-2",
+      "text": "e",
+      "x": 0.2948,
+      "y": 0.4562,
+      "w": 0.0077,
+      "h": 0.0119
+    },
+    {
+      "id": "productions-you-are-making-tog",
+      "text": "Productions you are making together.",
+      "x": 0.5928,
+      "y": 0.4562,
+      "w": 0.1701,
+      "h": 0.0178
+    },
+    {
+      "id": "same",
+      "text": "Same",
+      "x": 0.0831,
+      "y": 0.4621,
+      "w": 0.0731,
+      "h": 0.055
+    },
+    {
+      "id": "session",
+      "text": "session",
+      "x": 0.2071,
+      "y": 0.4725,
+      "w": 0.1455,
+      "h": 0.0446
+    },
+    {
+      "id": "item-2",
+      "text": "°",
+      "x": 0.3557,
+      "y": 0.5052,
+      "w": 0.0069,
+      "h": 0.0119
+    },
+    {
+      "id": "collaborations",
+      "text": "Collaborations",
+      "x": 0.4904,
+      "y": 0.5275,
+      "w": 0.0662,
+      "h": 0.0134
+    },
+    {
+      "id": "join-a-project",
+      "text": "Join a project",
+      "x": 0.6182,
+      "y": 0.5111,
+      "w": 0.0624,
+      "h": 0.0446
+    },
+    {
+      "id": "prodcollab-keeps-a-production-",
+      "text": "ProdCollab keeps a production connected while",
+      "x": 0.0816,
+      "y": 0.578,
+      "w": 0.331,
+      "h": 0.0282
+    },
+    {
+      "id": "item-3",
+      "text": "|",
+      "x": 0.592,
+      "y": 0.5825,
+      "w": 0.0031,
+      "h": 0.0238
+    },
+    {
+      "id": "projects",
+      "text": "projects",
+      "x": 0.6767,
+      "y": 0.5854,
+      "w": 0.0439,
+      "h": 0.0223
+    },
+    {
+      "id": "everyone-works-from-their-own-",
+      "text": "everyone works from their own setup. Share",
+      "x": 0.0816,
+      "y": 0.6211,
+      "w": 0.3002,
+      "h": 0.0282
+    },
+    {
+      "id": "settings",
+      "text": "Settings",
+      "x": 0.4911,
+      "y": 0.6226,
+      "w": 0.0346,
+      "h": 0.0163
+    },
+    {
+      "id": "sessions-stems-samples-and-rev",
+      "text": "sessions, stems, samples and revisions without",
+      "x": 0.0816,
+      "y": 0.6657,
+      "w": 0.3226,
+      "h": 0.0282
+    },
+    {
+      "id": "drive",
+      "text": "Drive",
+      "x": 0.6944,
+      "y": 0.6597,
+      "w": 0.0269,
+      "h": 0.0149
+    },
+    {
+      "id": "late-night-trap-idea",
+      "text": "Late-night trap idea",
+      "x": 0.6428,
+      "y": 0.6731,
+      "w": 0.0916,
+      "h": 0.0446
+    },
+    {
+      "id": "changing-the-way-you-produce",
+      "text": "changing the way you produce.",
+      "x": 0.0816,
+      "y": 0.7103,
+      "w": 0.2179,
+      "h": 0.0267
+    },
+    {
+      "id": "owner-maya",
+      "text": "Owner: Maya",
+      "x": 0.6428,
+      "y": 0.7207,
+      "w": 0.0531,
+      "h": 0.0104
+    },
+    {
+      "id": "shared-collaboration",
+      "text": "shared collaboration",
+      "x": 0.6428,
+      "y": 0.7474,
+      "w": 0.087,
+      "h": 0.0119
+    },
+    {
+      "id": "aug-18-207-am",
+      "text": "© Aug 18, 207 AM",
+      "x": 0.7182,
+      "y": 0.7712,
+      "w": 0.0731,
+      "h": 0.0446
+    },
+    {
+      "id": "download-for-windows",
+      "text": "Download for Windows",
+      "x": 0.1032,
+      "y": 0.8083,
+      "w": 0.1339,
+      "h": 0.0446
+    },
+    {
+      "id": "see-how-it-works",
+      "text": "See how it works >",
+      "x": 0.291,
+      "y": 0.8202,
+      "w": 0.1132,
+      "h": 0.0178
+    },
+    {
+      "id": "view-version-history",
+      "text": "View version history",
+      "x": 0.7244,
+      "y": 0.8262,
+      "w": 0.0831,
+      "h": 0.0446
+    }
+  ]
+}

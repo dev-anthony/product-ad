@@ -1,0 +1,119 @@
+{
+  "filename": "1791366252126-Screenshot__393_.png",
+  "width": 1366,
+  "height": 768,
+  "elements": [
+    {
+      "id": "prodcollab",
+      "text": "@ ProdCollab",
+      "x": 0.041,
+      "y": 0.1367,
+      "w": 0.1318,
+      "h": 0.0417
+    },
+    {
+      "id": "sign-in",
+      "text": "Sign in",
+      "x": 0.6098,
+      "y": 0.3021,
+      "w": 0.0688,
+      "h": 0.0365
+    },
+    {
+      "id": "you-example-com",
+      "text": "you@example.com",
+      "x": 0.6098,
+      "y": 0.4284,
+      "w": 0.0871,
+      "h": 0.0169
+    },
+    {
+      "id": "welcome-back-to-the-studio",
+      "text": "Welcome back to the studio.",
+      "x": 0.0805,
+      "y": 0.5339,
+      "w": 0.3375,
+      "h": 0.0339
+    },
+    {
+      "id": "eliminate-file-sharing-chaos-s",
+      "text": "Eliminate file-sharing chaos. Smart protection prevents",
+      "x": 0.1091,
+      "y": 0.6055,
+      "w": 0.2818,
+      "h": 0.0195
+    },
+    {
+      "id": "item",
+      "text": "|",
+      "x": 0.8324,
+      "y": 0.5938,
+      "w": 0.0615,
+      "h": 0.0625
+    },
+    {
+      "id": "accidental-overwrites-and-dupl",
+      "text": "accidental overwrites and duplicate audio files, so you can",
+      "x": 0.0996,
+      "y": 0.6367,
+      "w": 0.3001,
+      "h": 0.0195
+    },
+    {
+      "id": "focus-strictly-on-producing",
+      "text": "focus strictly on producing",
+      "x": 0.1808,
+      "y": 0.668,
+      "w": 0.134,
+      "h": 0.0195
+    },
+    {
+      "id": "don-t-have-an-account-sign-up",
+      "text": "Don't have an account? Sign up",
+      "x": 0.6772,
+      "y": 0.6992,
+      "w": 0.1464,
+      "h": 0.0169
+    },
+    {
+      "id": "prodcollab-2028-all-rights-res",
+      "text": "© PRODCOLLAB 2028. ALL RIGHTS RESERVED,",
+      "x": 0.041,
+      "y": 0.8607,
+      "w": 0.1772,
+      "h": 0.0091
+    },
+    {
+      "id": "activate-windows",
+      "text": "Activate Windows",
+      "x": 0.787,
+      "y": 0.8516,
+      "w": 0.1127,
+      "h": 0.0195
+    },
+    {
+      "id": "god",
+      "text": "God",
+      "x": 0.3001,
+      "y": 0.9583,
+      "w": 0.0835,
+      "h": 0.0313
+    },
+    {
+      "id": "a",
+      "text": "A",
+      "x": 0.8272,
+      "y": 0.9688,
+      "w": 0.0081,
+      "h": 0.0091
+    },
+    {
+      "id": "item-2",
+      "text": "|",
+      "x": 0.9963,
+      "y": 0.9479,
+      "w": 0.0007,
+      "h": 0.0521
+    }
+  ]
+}

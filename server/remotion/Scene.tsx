@@ -1,5 +1,5 @@
 import {
-  AbsoluteFill, Easing, Img, interpolate, staticFile,
+  AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile,
   useCurrentFrame, useVideoConfig,
 } from "remotion";
 import type {Recipe, Scene} from "./types";
@@ -68,6 +68,11 @@ export const SceneView: React.FC<{recipe: Recipe; scene: Scene}> = ({recipe, sce
 
   return (
     <AbsoluteFill style={{opacity: fade}}>
+      {scene.audio && recipe.baseUrl && (
+        <Sequence from={Math.round(0.3 * fps)}>
+          <Audio src={`${recipe.baseUrl}/${scene.audio}`} />
+        </Sequence>
+      )}
       <AbsoluteFill
         style={{
           transformOrigin: "0 0",
@@ -75,7 +80,7 @@ export const SceneView: React.FC<{recipe: Recipe; scene: Scene}> = ({recipe, sce
         }}
       >
         <Img
-          src={staticFile(scene.source)}
+          src={recipe.baseUrl ? `${recipe.baseUrl}/${scene.source}` : staticFile(scene.source)}
           style={{
             position: "absolute", left, top, width: dw, height: dh,
             borderRadius: 14, boxShadow: "0 30px 80px rgba(0,0,0,0.45)",

@@ -14,6 +14,17 @@ export type Scene = {
   camera: {from: string; to: string; start: number; end: number};
   actions: Action[];
   voiceover?: string;
+  audio?: string;
+  audioSecs?: number;
+};
+
+export type Music = {
+  id: string;
+  src: string;
+  name: string;
+  start: number;
+  duration: number;
+  volume: number;
 };
 
 export type Recipe = {
@@ -26,4 +37,6 @@ export type Recipe = {
   assets: Record<string, {w: number; h: number}>;
   targets: Record<string, Record<string, Box>>;
   scenes: Scene[];
+  music?: Music[];
+  baseUrl?: string;
 };

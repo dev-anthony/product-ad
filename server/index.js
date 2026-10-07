@@ -5,7 +5,10 @@ const path = require("path");
 const fs = require("fs");
 const sizeOf = require("image-size");
 const {createWorker} = require("tesseract.js");
+const {bundle} = require("@remotion/bundler");
+const {renderMedia, selectComposition} = require("@remotion/renderer");
 const {direct} = require("./director");
+const {makeVoice} = require("./voice");
 
 const app = express();
 process.on("uncaughtException", (e) => console.error("Uncaught:", e.message));
@@ -27,6 +30,16 @@ const upload = multer({
   storage,
   limits: {fileSize: 10 * 1024 * 1024},
   fileFilter: (req, file, cb) => cb(null, /image\/(png|jpeg|webp)/.test(file.mimetype)),
+});
+const uploadAudio = multer({
+  storage,
+  limits: {fileSize: 30 * 1024 * 1024},
+  fileFilter: (req, file, cb) => cb(null, /^audio\//.test(file.mimetype)),
+});
+
+app.post("/api/upload-audio", uploadAudio.single("audio"), (req, res) => {
+  if (!req.file) return res.status(400).json({error: "Upload an MP3 or WAV file under 30MB"});
+  res.json({filename: req.file.filename});
 });
 
 // ---------- OCR helpers ----------
@@ -108,18 +121,79 @@ app.post("/api/analyze", async (req, res) => {
   }
 });
 app.post("/api/recipe", async (req, res) => {
-  const filename = path.basename(req.body.filename || "");
-  const elPath = path.join(uploadDir, `${filename}.elements.json`);
-  if (!filename || !fs.existsSync(elPath)) return res.status(404).json({error: "Run analyze first"});
+  const names = (req.body.filenames || []).map((n) => path.basename(n));
+  if (!names.length) return res.status(400).json({error: "No files"});
   try {
-    const analysis = JSON.parse(fs.readFileSync(elPath, "utf8"));
-    const recipe = await direct({uploadDir, analysis});
-    fs.writeFileSync(path.join(uploadDir, `${filename}.recipe.json`), JSON.stringify(recipe, null, 2));
-    res.json(recipe);
+    const analyses = names.map((n) => {
+      const p = path.join(uploadDir, `${n}.elements.json`);
+      if (!fs.existsSync(p)) throw new Error(`Run analyze first: ${n}`);
+      return JSON.parse(fs.readFileSync(p, "utf8"));
+    });
+   const voice = req.body.voice || "en-US-AriaNeural";
+const recipe = await direct({uploadDir, analyses});
+const id = `project-${Date.now()}`;
+
+let voiceError = "";
+for (const [i, s] of recipe.scenes.entries()) {
+  if (!s.voiceover) continue;
+  const name = `${id}-scene-${i + 1}.mp3`;
+  try {
+    const secs = await makeVoice(s.voiceover, voice, path.join(uploadDir, name));
+    s.audio = name;
+    s.duration = Math.max(s.duration, Math.ceil((secs + 1.3) * 10) / 10);
+  } catch (e) {
+    voiceError = String(e.message || e);
+    console.error("TTS failed:", e);
+  }
+}
+
+fs.writeFileSync(path.join(uploadDir, `${id}.recipe.json`), JSON.stringify(recipe, null, 2));
+res.json({id, recipe, voiceError});
+  } catch (err) {
+    console.error(err, err.cause);
+    res.status(500).json({error: String(err.message || err)});
+  }
+});
+
+app.post("/api/render", async (req, res) => {
+  const id = path.basename(req.body.id || "");
+  const recipePath = path.join(uploadDir, `${id}.recipe.json`);
+  if (!id || !fs.existsSync(recipePath)) return res.status(404).json({error: "Generate the recipe first"});
+  try {
+    const savedRecipe = JSON.parse(fs.readFileSync(recipePath, "utf8"));
+    const recipe = {...(req.body.recipe || savedRecipe), baseUrl: "http://localhost:4000/files"};
+    const serveUrl = await getServeUrl();
+    const composition = await selectComposition({
+      serveUrl, id: "Ad", inputProps: {recipe}, browserExecutable: CHROME,
+    });
+    const outName = `${id}.mp4`;
+    await renderMedia({
+      composition, serveUrl, codec: "h264",
+      outputLocation: path.join(outDir, outName),
+      inputProps: {recipe}, browserExecutable: CHROME,
+    });
+    res.json({video: `http://localhost:4000/out/${outName}`});
   } catch (err) {
     console.error(err);
     res.status(500).json({error: String(err.message || err)});
   }
 });
+
+const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+const outDir = path.join(__dirname, "out");
+fs.mkdirSync(outDir, {recursive: true});
+app.use("/files", express.static(uploadDir));
+app.use("/out", express.static(outDir));
+
+let serveUrlPromise = null;
+const getServeUrl = () => {
+  if (!serveUrlPromise) {
+    serveUrlPromise = bundle({entryPoint: path.join(__dirname, "remotion", "index.ts")})
+      .catch((e) => { serveUrlPromise = null; throw e; });
+  }
+  return serveUrlPromise;
+};
+
+
 
 app.listen(4000, () => console.log("Server on http://localhost:4000"));

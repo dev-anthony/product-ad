@@ -1,0 +1,239 @@
+{
+  "filename": "1791336463117-Screenshot__374_.png",
+  "width": 1366,
+  "height": 768,
+  "elements": [
+    {
+      "id": "prodcollab-dev-account-8",
+      "text": "@ ProdCollab [DEV ACCOUNT 8]",
+      "x": 0,
+      "y": 0,
+      "w": 0.1362,
+      "h": 0.0313
+    },
+    {
+      "id": "x",
+      "text": "x",
+      "x": 0.981,
+      "y": 0.0117,
+      "w": 0.0015,
+      "h": 0.0026
+    },
+    {
+      "id": "aa-create-a-project",
+      "text": "aa Create a project",
+      "x": 0.1918,
+      "y": 0.1992,
+      "w": 0.1332,
+      "h": 0.0404
+    },
+    {
+      "id": "x-2",
+      "text": "x",
+      "x": 0.7958,
+      "y": 0.2174,
+      "w": 0.0073,
+      "h": 0.013
+    },
+    {
+      "id": "connect-a-studio-folder-and-st",
+      "text": "Connect a studio folder and start protecting your work",
+      "x": 0.2233,
+      "y": 0.2357,
+      "w": 0.2079,
+      "h": 0.0143
+    },
+    {
+      "id": "project-name",
+      "text": "Project Name",
+      "x": 0.1881,
+      "y": 0.3047,
+      "w": 0.0615,
+      "h": 0.0169
+    },
+    {
+      "id": "project-folder-and",
+      "text": "Project folder and",
+      "x": 0.4773,
+      "y": 0.3047,
+      "w": 0.0798,
+      "h": 0.0169
+    },
+    {
+      "id": "my-awesome-bea",
+      "text": "my-awesome-bea",
+      "x": 0.1977,
+      "y": 0.3555,
+      "w": 0.0798,
+      "h": 0.013
+    },
+    {
+      "id": "use-the-name-you-recognize-in-",
+      "text": "Use the name you recognize in your",
+      "x": 0.1881,
+      "y": 0.3841,
+      "w": 0.1318,
+      "h": 0.0391
+    },
+    {
+      "id": "studio",
+      "text": "studio.",
+      "x": 0.3382,
+      "y": 0.401,
+      "w": 0.0154,
+      "h": 0.0091
+    },
+    {
+      "id": "drop-files-here-or-connect-the",
+      "text": "Drop files here or connect the full project folder.",
+      "x": 0.5381,
+      "y": 0.4023,
+      "w": 0.2123,
+      "h": 0.0391
+    },
+    {
+      "id": "description",
+      "text": "Description",
+      "x": 0.1881,
+      "y": 0.4427,
+      "w": 0.0505,
+      "h": 0.0169
+    },
+    {
+      "id": "connect",
+      "text": "© Connect",
+      "x": 0.6406,
+      "y": 0.4466,
+      "w": 0.0556,
+      "h": 0.0521
+    },
+    {
+      "id": "describe",
+      "text": "Describe",
+      "x": 0.1984,
+      "y": 0.4935,
+      "w": 0.0381,
+      "h": 0.013
+    },
+    {
+      "id": "your-project",
+      "text": "your project.",
+      "x": 0.246,
+      "y": 0.4961,
+      "w": 0.0476,
+      "h": 0.0104
+    },
+    {
+      "id": "who-can-access-this-project",
+      "text": "Who can access this project?",
+      "x": 0.1874,
+      "y": 0.5768,
+      "w": 0.1332,
+      "h": 0.0391
+    },
+    {
+      "id": "b-private-project",
+      "text": "B Private project",
+      "x": 0.2006,
+      "y": 0.6406,
+      "w": 0.0732,
+      "h": 0.0182
+    },
+    {
+      "id": "2-open-project",
+      "text": "2 Open project",
+      "x": 0.3346,
+      "y": 0.6263,
+      "w": 0.0666,
+      "h": 0.0391
+    },
+    {
+      "id": "nly-you",
+      "text": "nly you",
+      "x": 0.2182,
+      "y": 0.6654,
+      "w": 0.0278,
+      "h": 0.0117
+    },
+    {
+      "id": "cancel",
+      "text": "Cancel",
+      "x": 0.336,
+      "y": 0.7474,
+      "w": 0.0286,
+      "h": 0.0313
+    },
+    {
+      "id": "dd-create-project-0-files",
+      "text": "dd Create project (0 files)",
+      "x": 0.5886,
+      "y": 0.7526,
+      "w": 0.1266,
+      "h": 0.0208
+    },
+    {
+      "id": "activate-windows",
+      "text": "Activate Windows",
+      "x": 0.787,
+      "y": 0.8516,
+      "w": 0.1127,
+      "h": 0.0195
+    },
+    {
+      "id": "z",
+      "text": "z",
+      "x": 0.4392,
+      "y": 0.9622,
+      "w": 0.0117,
+      "h": 0.0039
+    },
+    {
+      "id": "5",
+      "text": "5",
+      "x": 0.7321,
+      "y": 0.9674,
+      "w": 0.0029,
+      "h": 0.0052
+    },
+    {
+      "id": "ae",
+      "text": "ae",
+      "x": 0.828,
+      "y": 0.9635,
+      "w": 0.0227,
+      "h": 0.0091
+    },
+    {
+      "id": "19-25",
+      "text": "19:25",
+      "x": 0.9261,
+      "y": 0.9557,
+      "w": 0.019,
+      "h": 0.0117
+    },
+    {
+      "id": "oot",
+      "text": "oot",
+      "x": 0.0117,
+      "y": 0.9596,
+      "w": 0.082,
+      "h": 0.0286
+    },
+    {
+      "id": "bc",
+      "text": "BC",
+      "x": 0.6984,
+      "y": 0.9583,
+      "w": 0.0432,
+      "h": 0.0313
+    },
+    {
+      "id": "item",
+      "text": "|",
+      "x": 0.9905,
+      "y": 0.9479,
+      "w": 0.0066,
+      "h": 0.0521
+    }
+  ]
+}
