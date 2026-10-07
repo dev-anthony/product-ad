@@ -1,0 +1,199 @@
+{
+  "filename": "1791403845021-Screenshot__483_.png",
+  "width": 1366,
+  "height": 768,
+  "elements": [
+    {
+      "id": "item",
+      "text": "@®",
+      "x": 0.0139,
+      "y": 0.0833,
+      "w": 0.0161,
+      "h": 0.0404
+    },
+    {
+      "id": "preferences",
+      "text": "PREFERENCES",
+      "x": 0.071,
+      "y": 0.1003,
+      "w": 0.063,
+      "h": 0.0091
+    },
+    {
+      "id": "settings",
+      "text": "Settings",
+      "x": 0.071,
+      "y": 0.1289,
+      "w": 0.0688,
+      "h": 0.0339
+    },
+    {
+      "id": "project-protection",
+      "text": "Project protection",
+      "x": 0.0893,
+      "y": 0.3086,
+      "w": 0.1186,
+      "h": 0.0247
+    },
+    {
+      "id": "get-collaborator-updates-autom",
+      "text": "Get collaborator updates automatically",
+      "x": 0.0886,
+      "y": 0.3789,
+      "w": 0.2035,
+      "h": 0.0195
+    },
+    {
+      "id": "e",
+      "text": "e@",
+      "x": 0.5117,
+      "y": 0.3737,
+      "w": 0.0146,
+      "h": 0.026
+    },
+    {
+      "id": "v",
+      "text": "v",
+      "x": 0.0176,
+      "y": 0.444,
+      "w": 0.0117,
+      "h": 0.0208
+    },
+    {
+      "id": "automatic-backup-delay",
+      "text": "Automatic backup delay",
+      "x": 0.0886,
+      "y": 0.4635,
+      "w": 0.1266,
+      "h": 0.0195
+    },
+    {
+      "id": "choose-how-long-prodcollab-wai",
+      "text": "Choose how long ProdCollab waits after your last change.",
+      "x": 0.0893,
+      "y": 0.4792,
+      "w": 0.2504,
+      "h": 0.0391
+    },
+    {
+      "id": "2min",
+      "text": "2min ||",
+      "x": 0.2167,
+      "y": 0.5208,
+      "w": 0.0417,
+      "h": 0.0469
+    },
+    {
+      "id": "manual",
+      "text": "|| Manual",
+      "x": 0.4056,
+      "y": 0.5221,
+      "w": 0.0483,
+      "h": 0.0456
+    },
+    {
+      "id": "desktop-notifications",
+      "text": "Desktop notifications",
+      "x": 0.0857,
+      "y": 0.6185,
+      "w": 0.1098,
+      "h": 0.0404
+    },
+    {
+      "id": "item-2",
+      "text": "@",
+      "x": 0.5088,
+      "y": 0.6237,
+      "w": 0.0351,
+      "h": 0.0365
+    },
+    {
+      "id": "projects-on-this-computer",
+      "text": "Projects on this computer",
+      "x": 0.0893,
+      "y": 0.7747,
+      "w": 0.1706,
+      "h": 0.0247
+    },
+    {
+      "id": "item-3",
+      "text": "@",
+      "x": 0.0117,
+      "y": 0.8203,
+      "w": 0.0242,
+      "h": 0.0417
+    },
+    {
+      "id": "download-my-projects-and-colla",
+      "text": "Download my projects and collaborations automatically",
+      "x": 0.0886,
+      "y": 0.8398,
+      "w": 0.2892,
+      "h": 0.0195
+    },
+    {
+      "id": "the-background",
+      "text": "the background",
+      "x": 0.0893,
+      "y": 0.8906,
+      "w": 0.0688,
+      "h": 0.0156
+    },
+    {
+      "id": "item-4",
+      "text": "|",
+      "x": 0.9963,
+      "y": 0.9479,
+      "w": 0.0007,
+      "h": 0.013
+    },
+    {
+      "id": "item-5",
+      "text": "=",
+      "x": 0.4392,
+      "y": 0.9622,
+      "w": 0.0117,
+      "h": 0.0039
+    },
+    {
+      "id": "1931",
+      "text": "1931",
+      "x": 0.9261,
+      "y": 0.9557,
+      "w": 0.0176,
+      "h": 0.0117
+    },
+    {
+      "id": "item-6",
+      "text": "|",
+      "x": 0.9963,
+      "y": 0.9622,
+      "w": 0.0007,
+      "h": 0.0039
+    },
+    {
+      "id": "mostly",
+      "text": "Mostly",
+      "x": 0.7416,
+      "y": 0.9674,
+      "w": 0.0673,
+      "h": 0.0169
+    },
+    {
+      "id": "item-7",
+      "text": "&",
+      "x": 0.8455,
+      "y": 0.9688,
+      "w": 0.0051,
+      "h": 0.0156
+    },
+    {
+      "id": "item-8",
+      "text": "|",
+      "x": 0.9941,
+      "y": 0.9505,
+      "w": 0.0051,
+      "h": 0.0495
+    }
+  ]
+}

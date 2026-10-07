@@ -9,6 +9,7 @@ const {bundle} = require("@remotion/bundler");
 const {renderMedia, selectComposition} = require("@remotion/renderer");
 const {direct} = require("./director");
 const {makeVoice} = require("./voice");
+const {retime} = require("./timing");
 
 const app = express();
 process.on("uncaughtException", (e) => console.error("Uncaught:", e.message));
@@ -135,23 +136,27 @@ const id = `project-${Date.now()}`;
 
 let voiceError = "";
 for (const [i, s] of recipe.scenes.entries()) {
-  if (!s.voiceover) continue;
-  const name = `${id}-scene-${i + 1}.mp3`;
-  try {
-    const secs = await makeVoice(s.voiceover, voice, path.join(uploadDir, name));
-    s.audio = name;
-    s.duration = Math.max(s.duration, Math.ceil((secs + 1.3) * 10) / 10);
-  } catch (e) {
-    voiceError = String(e.message || e);
-    console.error("TTS failed:", e);
+  let secs = 0;
+  if (s.voiceover) {
+    const name = `${id}-scene-${i + 1}.mp3`;
+    try {
+      secs = await makeVoice(s.voiceover, voice, path.join(uploadDir, name));
+      s.audio = name;
+      s.audioSecs = secs;
+    } catch (e) {
+      secs = 0;
+      voiceError = String(e.message || e);
+      console.error("TTS failed:", e);
+    }
   }
+  retime(s, secs);
 }
 
 fs.writeFileSync(path.join(uploadDir, `${id}.recipe.json`), JSON.stringify(recipe, null, 2));
 res.json({id, recipe, voiceError});
   } catch (err) {
-    console.error(err, err.cause);
-    res.status(500).json({error: String(err.message || err)});
+    console.error(err.message, err.cause?.message || "");
+    res.status(err.status === 503 ? 503 : 500).json({error: String(err.message || err)});
   }
 });
 

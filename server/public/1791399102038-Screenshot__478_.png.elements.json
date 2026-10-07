@@ -1,0 +1,303 @@
+{
+  "filename": "1791399102038-Screenshot__478_.png",
+  "width": 1366,
+  "height": 768,
+  "elements": [
+    {
+      "id": "electron-react-app",
+      "text": "@ Electron React App",
+      "x": 0,
+      "y": 0,
+      "w": 0.0886,
+      "h": 0.0299
+    },
+    {
+      "id": "x",
+      "text": "x",
+      "x": 0.981,
+      "y": 0.0117,
+      "w": 0.0015,
+      "h": 0.0026
+    },
+    {
+      "id": "item",
+      "text": "<",
+      "x": 0.022,
+      "y": 0.0951,
+      "w": 0.0029,
+      "h": 0.0104
+    },
+    {
+      "id": "back",
+      "text": "Back",
+      "x": 0.0344,
+      "y": 0.0951,
+      "w": 0.0198,
+      "h": 0.0104
+    },
+    {
+      "id": "afro-session",
+      "text": "afro-session",
+      "x": 0.0849,
+      "y": 0.0924,
+      "w": 0.0659,
+      "h": 0.0143
+    },
+    {
+      "id": "the-room-is-cold",
+      "text": "The room is cold",
+      "x": 0.4253,
+      "y": 0.2318,
+      "w": 0.1449,
+      "h": 0.0234
+    },
+    {
+      "id": "pick-your-side-of-the-glass-to",
+      "text": "Pick your side of the glass to patch in.",
+      "x": 0.4026,
+      "y": 0.2826,
+      "w": 0.1881,
+      "h": 0.0182
+    },
+    {
+      "id": "take-the-desk",
+      "text": "Take the desk",
+      "x": 0.1881,
+      "y": 0.4714,
+      "w": 0.0827,
+      "h": 0.0156
+    },
+    {
+      "id": "step-into-the-booth",
+      "text": "‘Step into the booth",
+      "x": 0.552,
+      "y": 0.4701,
+      "w": 0.1127,
+      "h": 0.0221
+    },
+    {
+      "id": "room",
+      "text": "room",
+      "x": 0.235,
+      "y": 0.5091,
+      "w": 0.0249,
+      "h": 0.0091
+    },
+    {
+      "id": "live-room",
+      "text": "Live room",
+      "x": 0.552,
+      "y": 0.5091,
+      "w": 0.0476,
+      "h": 0.0091
+    },
+    {
+      "id": "open-the",
+      "text": "Open the",
+      "x": 0.1889,
+      "y": 0.5469,
+      "w": 0.0395,
+      "h": 0.0104
+    },
+    {
+      "id": "room-and-get-a-code-to-share-w",
+      "text": "room and get a code to share with your",
+      "x": 0.235,
+      "y": 0.5456,
+      "w": 0.1691,
+      "h": 0.0156
+    },
+    {
+      "id": "your-microphone-tums-on",
+      "text": "Your microphone tums on",
+      "x": 0.5527,
+      "y": 0.5469,
+      "w": 0.1098,
+      "h": 0.0143
+    },
+    {
+      "id": "and-your-take-is-recorded-on",
+      "text": "and your take is recorded on",
+      "x": 0.6698,
+      "y": 0.5456,
+      "w": 0.1237,
+      "h": 0.0156
+    },
+    {
+      "id": "performer-you-will-hear-them",
+      "text": "performer. You will hear them",
+      "x": 0.1889,
+      "y": 0.5521,
+      "w": 0.1245,
+      "h": 0.0443
+    },
+    {
+      "id": "lve-start-and-stop-each",
+      "text": "lve, start and stop each",
+      "x": 0.325,
+      "y": 0.5716,
+      "w": 0.0988,
+      "h": 0.0117
+    },
+    {
+      "id": "your-own-computer-in-full-qual",
+      "text": "your own computer in full qualty. What the producer",
+      "x": 0.5527,
+      "y": 0.5716,
+      "w": 0.2262,
+      "h": 0.0156
+    },
+    {
+      "id": "take-tak-to-them-between",
+      "text": "take, tak to them between",
+      "x": 0.1889,
+      "y": 0.5964,
+      "w": 0.1098,
+      "h": 0.0117
+    },
+    {
+      "id": "takes-and-keep-a-backup",
+      "text": "takes, and keep a backup",
+      "x": 0.3075,
+      "y": 0.5768,
+      "w": 0.112,
+      "h": 0.0443
+    },
+    {
+      "id": "hears-is-only-for",
+      "text": "hears is only for",
+      "x": 0.5527,
+      "y": 0.5964,
+      "w": 0.0644,
+      "h": 0.0156
+    },
+    {
+      "id": "monitoring-they-start-and-stop",
+      "text": "monitoring. They start and stop each",
+      "x": 0.6325,
+      "y": 0.5964,
+      "w": 0.1523,
+      "h": 0.0156
+    },
+    {
+      "id": "recording-of-everything-that-c",
+      "text": "recording of everything that comes through,",
+      "x": 0.1889,
+      "y": 0.6224,
+      "w": 0.1911,
+      "h": 0.0156
+    },
+    {
+      "id": "take",
+      "text": "take,",
+      "x": 0.5527,
+      "y": 0.6237,
+      "w": 0.0176,
+      "h": 0.0104
+    },
+    {
+      "id": "and-youll-see",
+      "text": "and youll see",
+      "x": 0.5776,
+      "y": 0.6042,
+      "w": 0.0564,
+      "h": 0.043
+    },
+    {
+      "id": "on-your",
+      "text": "on your",
+      "x": 0.6823,
+      "y": 0.6263,
+      "w": 0.0286,
+      "h": 0.0117
+    },
+    {
+      "id": "screen-enter-the",
+      "text": "screen. Enter the",
+      "x": 0.7174,
+      "y": 0.6237,
+      "w": 0.0717,
+      "h": 0.0104
+    },
+    {
+      "id": "code-they-sent-you",
+      "text": "code they sent you",
+      "x": 0.5527,
+      "y": 0.6471,
+      "w": 0.082,
+      "h": 0.0156
+    },
+    {
+      "id": "open-the-room",
+      "text": "Open the room",
+      "x": 0.2775,
+      "y": 0.7734,
+      "w": 0.0761,
+      "h": 0.0326
+    },
+    {
+      "id": "recording-by-yourself",
+      "text": "Recording by yourself?",
+      "x": 0.2204,
+      "y": 0.888,
+      "w": 0.1018,
+      "h": 0.0339
+    },
+    {
+      "id": "item-2",
+      "text": "©",
+      "x": 0.1947,
+      "y": 0.9193,
+      "w": 0.0073,
+      "h": 0.0052
+    },
+    {
+      "id": "noone-else-needs-to-join-recor",
+      "text": "Noone else needs to join. Record on your own, listen back, and send your best take to the project.",
+      "x": 0.2211,
+      "y": 0.9089,
+      "w": 0.3873,
+      "h": 0.0326
+    },
+    {
+      "id": "item-3",
+      "text": ">",
+      "x": 0.4392,
+      "y": 0.9622,
+      "w": 0.0117,
+      "h": 0.0039
+    },
+    {
+      "id": "d-27-c",
+      "text": "D 27°C",
+      "x": 0.7042,
+      "y": 0.9609,
+      "w": 0.0432,
+      "h": 0.026
+    },
+    {
+      "id": "clear",
+      "text": "clear",
+      "x": 0.7884,
+      "y": 0.9674,
+      "w": 0.0205,
+      "h": 0.013
+    },
+    {
+      "id": "a",
+      "text": "A",
+      "x": 0.8272,
+      "y": 0.9688,
+      "w": 0.0081,
+      "h": 0.0091
+    },
+    {
+      "id": "fr",
+      "text": "FR)",
+      "x": 0.97,
+      "y": 0.9635,
+      "w": 0.0176,
+      "h": 0.0313
+    }
+  ]
+}

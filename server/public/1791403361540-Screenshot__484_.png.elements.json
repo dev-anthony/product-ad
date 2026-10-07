@@ -1,0 +1,231 @@
+{
+  "filename": "1791403361540-Screenshot__484_.png",
+  "width": 1366,
+  "height": 768,
+  "elements": [
+    {
+      "id": "item",
+      "text": "@",
+      "x": 0.0168,
+      "y": 0.0951,
+      "w": 0.0132,
+      "h": 0.0234
+    },
+    {
+      "id": "preferences",
+      "text": "PREFERENCES",
+      "x": 0.071,
+      "y": 0.1003,
+      "w": 0.063,
+      "h": 0.0091
+    },
+    {
+      "id": "settings",
+      "text": "Settings",
+      "x": 0.071,
+      "y": 0.1315,
+      "w": 0.0688,
+      "h": 0.0313
+    },
+    {
+      "id": "automatic-backup-delay",
+      "text": "Automatic backup delay",
+      "x": 0.0886,
+      "y": 0.2643,
+      "w": 0.1266,
+      "h": 0.0195
+    },
+    {
+      "id": "choose-how-long-prodcollab",
+      "text": "Choose how long ProdCollab",
+      "x": 0.0893,
+      "y": 0.2786,
+      "w": 0.1303,
+      "h": 0.0404
+    },
+    {
+      "id": "waits-after-your",
+      "text": "waits after your",
+      "x": 0.2255,
+      "y": 0.2956,
+      "w": 0.0586,
+      "h": 0.013
+    },
+    {
+      "id": "last-change",
+      "text": "last change.",
+      "x": 0.2906,
+      "y": 0.2982,
+      "w": 0.049,
+      "h": 0.0117
+    },
+    {
+      "id": "2",
+      "text": "2",
+      "x": 0.0176,
+      "y": 0.319,
+      "w": 0.0124,
+      "h": 0.0208
+    },
+    {
+      "id": "item-2",
+      "text": "“",
+      "x": 0.0168,
+      "y": 0.3359,
+      "w": 0.0095,
+      "h": 0.0039
+    },
+    {
+      "id": "2min",
+      "text": "2min ||",
+      "x": 0.2167,
+      "y": 0.3216,
+      "w": 0.0417,
+      "h": 0.0469
+    },
+    {
+      "id": "gomin",
+      "text": "gomin",
+      "x": 0.3675,
+      "y": 0.3424,
+      "w": 0.0286,
+      "h": 0.0117
+    },
+    {
+      "id": "manual",
+      "text": "Manual",
+      "x": 0.4224,
+      "y": 0.3424,
+      "w": 0.0315,
+      "h": 0.0117
+    },
+    {
+      "id": "y",
+      "text": "y",
+      "x": 0.0176,
+      "y": 0.444,
+      "w": 0.0117,
+      "h": 0.0208
+    },
+    {
+      "id": "desktop-notifications",
+      "text": "Desktop notifications",
+      "x": 0.0857,
+      "y": 0.4193,
+      "w": 0.1098,
+      "h": 0.0404
+    },
+    {
+      "id": "item-3",
+      "text": "@",
+      "x": 0.5088,
+      "y": 0.4245,
+      "w": 0.0351,
+      "h": 0.0365
+    },
+    {
+      "id": "projects-on-this-computer",
+      "text": "Projects on this computer",
+      "x": 0.0893,
+      "y": 0.5755,
+      "w": 0.1706,
+      "h": 0.0247
+    },
+    {
+      "id": "download-my-projects-and-colla",
+      "text": "Download my projects and collaborations automatically",
+      "x": 0.0886,
+      "y": 0.6406,
+      "w": 0.2892,
+      "h": 0.0195
+    },
+    {
+      "id": "the-background",
+      "text": "the background.",
+      "x": 0.0893,
+      "y": 0.6914,
+      "w": 0.0688,
+      "h": 0.0156
+    },
+    {
+      "id": "where-projects-are-saved",
+      "text": "Where projects are saved",
+      "x": 0.0857,
+      "y": 0.7539,
+      "w": 0.1369,
+      "h": 0.0404
+    },
+    {
+      "id": "each",
+      "text": "Each",
+      "x": 0.0893,
+      "y": 0.7982,
+      "w": 0.0146,
+      "h": 0.0104
+    },
+    {
+      "id": "project-gets-its-own-folder-in",
+      "text": "project gets its own folder inside this one.",
+      "x": 0.1135,
+      "y": 0.7813,
+      "w": 0.1794,
+      "h": 0.0404
+    },
+    {
+      "id": "cg",
+      "text": "CG",
+      "x": 0.0176,
+      "y": 0.8932,
+      "w": 0.0117,
+      "h": 0.0208
+    },
+    {
+      "id": "item-4",
+      "text": "|",
+      "x": 0.9963,
+      "y": 0.9479,
+      "w": 0.0007,
+      "h": 0.013
+    },
+    {
+      "id": "1931",
+      "text": "1931",
+      "x": 0.9261,
+      "y": 0.9557,
+      "w": 0.0176,
+      "h": 0.0117
+    },
+    {
+      "id": "item-5",
+      "text": "|",
+      "x": 0.9963,
+      "y": 0.9622,
+      "w": 0.0007,
+      "h": 0.0039
+    },
+    {
+      "id": "mostly",
+      "text": "Mostly",
+      "x": 0.7548,
+      "y": 0.9674,
+      "w": 0.03,
+      "h": 0.0169
+    },
+    {
+      "id": "item-6",
+      "text": "&",
+      "x": 0.8455,
+      "y": 0.9688,
+      "w": 0.0051,
+      "h": 0.0156
+    },
+    {
+      "id": "item-7",
+      "text": "|",
+      "x": 0.9941,
+      "y": 0.9505,
+      "w": 0.0051,
+      "h": 0.0495
+    }
+  ]
+}

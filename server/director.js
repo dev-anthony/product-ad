@@ -3,7 +3,13 @@ const fs = require("fs");
 const path = require("path");
 
 const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const DEFAULT_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash-lite"];
+const fromEnv = (process.env.GEMINI_MODELS || process.env.GEMINI_MODEL || "")
+  .split(",").map((s) => s.trim()).filter(Boolean);
+// .env models are tried first, then the defaults as fallbacks (duplicates removed)
+const MODELS = [...new Set([...fromEnv, ...DEFAULT_MODELS])];
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const SCENE = 6;
 const ALLOWED = ["cursor_move", "click", "highlight"];
 
@@ -94,6 +100,33 @@ const validate = (r, analyses) => {
   return errs;
 };
 
+async function generate(contents) {
+  let lastErr;
+  for (const model of MODELS) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        return await ai.models.generateContent({
+          model,
+          contents,
+          config: {systemInstruction: SYSTEM, responseMimeType: "application/json"},
+        });
+      } catch (e) {
+        lastErr = e;
+        const status = e.status ?? e.code;
+        if (!RETRYABLE.has(status)) throw e; // bad key, bad request etc: don't retry
+        const wait = Math.min(15000, 1000 * 2 ** i) + Math.random() * 500;
+        console.warn(`${model} returned ${status}, retry ${i + 1}/3 in ${Math.round(wait)}ms`);
+        await sleep(wait);
+      }
+    }
+    console.warn(`${model} still unavailable, trying next model`);
+  }
+  const err = new Error("The AI model is busy or rate-limited right now. Please try again in a minute.");
+  err.status = 503;
+  err.cause = lastErr;
+  throw err;
+}
+
 async function direct({uploadDir, analyses}) {
   const parts = [];
   analyses.forEach((a, i) => {
@@ -106,11 +139,7 @@ async function direct({uploadDir, analyses}) {
 
   let result, errs = [];
   for (let attempt = 0; attempt < 2; attempt++) {
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents,
-      config: {systemInstruction: SYSTEM, responseMimeType: "application/json"},
-    });
+    const response = await generate(contents);
     const text = response.text || "";
     try {
       result = parse(text);
