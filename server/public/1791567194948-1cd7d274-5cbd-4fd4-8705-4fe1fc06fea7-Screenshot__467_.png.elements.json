@@ -1,0 +1,167 @@
+{
+  "filename": "1791567194948-1cd7d274-5cbd-4fd4-8705-4fe1fc06fea7-Screenshot__467_.png",
+  "width": 1366,
+  "height": 768,
+  "elements": [
+    {
+      "id": "prodcollab",
+      "text": "@ ProdCollab",
+      "x": 0.041,
+      "y": 0.1367,
+      "w": 0.1318,
+      "h": 0.0417
+    },
+    {
+      "id": "signin",
+      "text": "Signin",
+      "x": 0.6105,
+      "y": 0.2995,
+      "w": 0.0703,
+      "h": 0.0417
+    },
+    {
+      "id": "different",
+      "text": "DIFFERENT",
+      "x": 0.1618,
+      "y": 0.4336,
+      "w": 0.0483,
+      "h": 0.0078
+    },
+    {
+      "id": "studios",
+      "text": "STUDIOS.",
+      "x": 0.2174,
+      "y": 0.4336,
+      "w": 0.0381,
+      "h": 0.0078
+    },
+    {
+      "id": "same",
+      "text": "SAME",
+      "x": 0.2665,
+      "y": 0.4336,
+      "w": 0.022,
+      "h": 0.0078
+    },
+    {
+      "id": "session",
+      "text": "SESSION",
+      "x": 0.2958,
+      "y": 0.4336,
+      "w": 0.0381,
+      "h": 0.0078
+    },
+    {
+      "id": "you-example-com",
+      "text": "you@example.com",
+      "x": 0.6105,
+      "y": 0.4284,
+      "w": 0.0981,
+      "h": 0.0182
+    },
+    {
+      "id": "forgot",
+      "text": "Forgot",
+      "x": 0.8097,
+      "y": 0.4622,
+      "w": 0.0307,
+      "h": 0.0521
+    },
+    {
+      "id": "welcome-back-to-the",
+      "text": "Welcome back to the",
+      "x": 0.1135,
+      "y": 0.5065,
+      "w": 0.2731,
+      "h": 0.0352
+    },
+    {
+      "id": "studio",
+      "text": "studio.",
+      "x": 0.2057,
+      "y": 0.5586,
+      "w": 0.0886,
+      "h": 0.0352
+    },
+    {
+      "id": "accidental-overwrites-and-dupl",
+      "text": "accidental overwrites and duplicate audio files, so you",
+      "x": 0.0915,
+      "y": 0.6628,
+      "w": 0.3163,
+      "h": 0.0208
+    },
+    {
+      "id": "can-focus-strictly-on-producin",
+      "text": "can focus strictly on producing.",
+      "x": 0.1581,
+      "y": 0.694,
+      "w": 0.1801,
+      "h": 0.0208
+    },
+    {
+      "id": "don-t",
+      "text": "Don't",
+      "x": 0.6698,
+      "y": 0.6992,
+      "w": 0.0124,
+      "h": 0.013
+    },
+    {
+      "id": "have-an",
+      "text": "have an",
+      "x": 0.705,
+      "y": 0.7031,
+      "w": 0.03,
+      "h": 0.0091
+    },
+    {
+      "id": "account",
+      "text": "account?",
+      "x": 0.743,
+      "y": 0.7018,
+      "w": 0.0337,
+      "h": 0.0104
+    },
+    {
+      "id": "sign-up",
+      "text": "Sign up",
+      "x": 0.7936,
+      "y": 0.6979,
+      "w": 0.0381,
+      "h": 0.0195
+    },
+    {
+      "id": "item",
+      "text": "=",
+      "x": 0.0117,
+      "y": 0.9635,
+      "w": 0.0117,
+      "h": 0.0208
+    },
+    {
+      "id": "a",
+      "text": "a",
+      "x": 0.4048,
+      "y": 0.9596,
+      "w": 0.0146,
+      "h": 0.0286
+    },
+    {
+      "id": "27-c",
+      "text": "© 27°C",
+      "x": 0.7028,
+      "y": 0.9583,
+      "w": 0.0447,
+      "h": 0.0286
+    },
+    {
+      "id": "a-2",
+      "text": "A &",
+      "x": 0.8265,
+      "y": 0.9635,
+      "w": 0.0264,
+      "h": 0.0208
+    }
+  ]
+}

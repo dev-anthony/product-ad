@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=.env index.js",
-    "dev": "nodemon index.js",
+    "dev": "nodemon --ignore public/ --ignore out/ --ext js index.js",
     "studio": "remotion studio remotion/index.ts",
     "render": "remotion render remotion/index.ts Ad out/demo.mp4"
   },

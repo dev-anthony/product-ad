@@ -16,6 +16,18 @@ const {retime} = require("./timing");
 const app = express();
 process.on("uncaughtException", (e) => console.error("Uncaught:", e.message));
 process.on("unhandledRejection", (e) => console.error("Unhandled:", e));
+app.use((req, res, next) => {
+  const started = Date.now();
+  console.log(`[${new Date().toISOString()}] -> ${req.method} ${req.path}`);
+  res.on("finish", () => {
+    console.log(`[${new Date().toISOString()}] <- ${req.method} ${req.path} ${res.statusCode} ${Date.now() - started}ms`);
+  });
+  res.on("close", () => {
+    if (!res.writableFinished)
+      console.warn(`[${new Date().toISOString()}] !! ${req.method} ${req.path} connection closed before response`);
+  });
+  next();
+});
 app.use(cors());
 app.use(express.json());
 
