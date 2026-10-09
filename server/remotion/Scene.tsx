@@ -6,17 +6,25 @@ const ease = Easing.bezier(0.45, 0, 0.2, 1);
 const easeOut = Easing.bezier(0.33, 1, 0.68, 1);
 const clamp = {extrapolateLeft: "clamp", extrapolateRight: "clamp"} as const;
 
-const getView = (r: Recipe, s: Scene, id: string) => {
-  if (id === "full") return {cx: 0.5, cy: 0.5, z: 1};
+const getTarget = (r: Recipe, s: Scene, id: string) => {
   const b = r.targets[s.source]?.[id];
-  if (!b) return {cx: 0.5, cy: 0.5, z: 1};
-  const z = Math.min(3.2, Math.max(1.5, 0.35 / Math.max(b.w, b.h)));
+  if (!b) throw new Error(`Scene ${s.id} references missing target "${id}" on ${s.source}`);
+  if (![b.x, b.y, b.w, b.h].every(Number.isFinite) ||
+      b.x < 0 || b.y < 0 || b.w <= 0 || b.h <= 0 || b.x + b.w > 1 || b.y + b.h > 1)
+    throw new Error(`Scene ${s.id} has invalid bounds for target "${id}" on ${s.source}`);
+  return b;
+};
+
+const getView = (r: Recipe, s: Scene, id: string, W: number, H: number, dw: number, dh: number) => {
+  if (id === "full") return {cx: 0.5, cy: 0.5, z: 1};
+  const b = getTarget(r, s, id);
+  const z = Math.min(3.2, Math.max(1.5, Math.min((W * 0.35) / (b.w * dw), (H * 0.35) / (b.h * dh))));
   return {cx: b.x + b.w / 2, cy: b.y + b.h / 2, z};
 };
 
 const center = (r: Recipe, s: Scene, id: string) => {
-  const b = r.targets[s.source]?.[id];
-  return b ? {x: b.x + b.w / 2, y: b.y + b.h / 2} : {x: 0.5, y: 0.5};
+  const b = getTarget(r, s, id);
+  return {x: b.x + b.w / 2, y: b.y + b.h / 2};
 };
 
 // Keep the camera inside the screenshot so no empty background shows at the edges.
@@ -39,8 +47,8 @@ export const SceneView: React.FC<{
   const left = (W - dw) / 2, top = (H - dh) / 2;
 
   // camera, with a slow push-in once it has arrived
-  const a = getView(recipe, scene, scene.camera.from);
-  const b = getView(recipe, scene, scene.camera.to);
+  const a = getView(recipe, scene, scene.camera.from, W, H, dw, dh);
+  const b = getView(recipe, scene, scene.camera.to, W, H, dw, dh);
   const p = interpolate(t, [scene.camera.start, scene.camera.end], [0, 1], {easing: ease, ...clamp});
   const drift = 1 + 0.015 * Math.max(0, t - scene.camera.end);
   const z = a.z * Math.pow(b.z / a.z, p) * drift;
@@ -74,9 +82,7 @@ export const SceneView: React.FC<{
     : interpolate(t, [scene.duration - OVERLAP, scene.duration], [0, 1], {easing: ease, ...clamp});
   let opacity = inP;
   let push = isFirst ? 1 : 1 + 0.05 * (1 - inP);
-  if (isLast) {
-    opacity *= interpolate(t, [scene.duration - 0.5, scene.duration], [1, 0], clamp);
-  } else {
+  if (!isLast) {
     opacity *= 1 - interpolate(outP, [0.4, 1], [0, 1], clamp);
     push *= 1 + 0.06 * outP;
   }

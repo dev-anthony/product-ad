@@ -42,7 +42,6 @@ export type Recipe = {
   captions?: boolean; // burned-in subtitles of the voiceover, on unless false
 };
 
-export const LEAD = 0.25; // voiceover starts this far into a scene
 export const OVERLAP = 0.5; // seconds neighbouring scenes overlap
 
 // ONE source of truth for the timeline. Ad.tsx, Root.tsx and the editor all use it.
@@ -58,18 +57,17 @@ export const sceneLayout = (scenes: Scene[], fps: number) => {
   return {full, froms, total};
 };
 
-// When each voiceover plays. A voice is cut at the end of its own scene and at the
-// start of the next voice, so two voices can never be audible at the same time.
+// Narration starts with its scene and runs up to the next narration without overlap.
 export const voiceWindows = (scenes: Scene[], fps: number) => {
   const {full, froms, total} = sceneLayout(scenes, fps);
-  const starts = scenes.map((s, i) => (s.audio ? froms[i] + Math.round(LEAD * fps) : -1));
+  const starts = scenes.map((s, i) => (s.audio ? froms[i] : -1));
   return scenes.map((s, i) => {
     if (!s.audio) return null;
     const from = starts[i];
-    const secs = s.audioSecs ?? Math.max(0.5, s.duration - LEAD - 0.5);
-    let end = Math.min(from + Math.ceil(secs * fps) + 1, froms[i] + full[i], total);
+    const secs = s.audioSecs ?? s.duration;
+    let end = Math.min(from + Math.ceil(secs * fps), froms[i] + full[i], total);
     const next = starts.find((st, k) => k > i && st >= 0);
-    if (next !== undefined) end = Math.min(end, next - 1);
+    if (next !== undefined) end = Math.min(end, next);
     return end - from >= 1 ? {from, len: end - from} : null;
   });
 };

@@ -43,7 +43,7 @@ Direct an ad with one scene per screen you use, ${SCENE} seconds each. Return ex
         {"type": "cursor_move", "target": "<id>", "at": 2.5, "duration": 1},
         {"type": "click", "target": "<id>", "at": 3.8}
       ],
-      "customTargets": {"<new-id>": [ymin, xmin, ymax, xmax]},
+      "customTargets": {"<new-id>": {"x": 0.4, "y": 0.5, "w": 0.1, "h": 0.06}},
       "voiceover": "<one short sentence, max 12 words>"
     }
   ]
@@ -51,8 +51,8 @@ Direct an ad with one scene per screen you use, ${SCENE} seconds each. Return ex
 
 Rules:
 - Use 1 to ${analyses.length} screens, each at most once. Choose the order that tells the best story: hook, then key features, then call to action.
-- In each scene pick the single most important button or feature as the target. The camera.to, highlight target, cursor_move target and click target must all be the SAME id.
-- Prefer an id from that screen's detected list. OCR often misses buttons, especially light text on colored or white buttons, and returns junk. If the target is not in the list, add it to customTargets as [ymin, xmin, ymax, xmax], integers from 0 to 1000 relative to that screen's image, as a tight box around the element.
+- In each scene prefer the primary call-to-action button or actionable control. Never click headings, explanatory text, browser controls, or decorative elements. If there is no actionable control, choose a clear feature label. The camera.to, highlight target, cursor_move target and click target must all be the SAME id.
+- For a text feature, prefer its detected OCR id. For a CTA, use a custom target around the full visible button when its boundaries are clear; if they are not, use the OCR id for its label rather than guessing coordinates. OCR often misses buttons, especially light text on colored or white buttons, and returns junk. Custom targets use x, y, w, and h normalized from 0 to 1 relative to the screen. x and y are the top-left corner; w and h are the box size.
 - Allowed action types: cursor_move, click, highlight. All times are in seconds within 0-${SCENE}. The click must happen after the cursor_move ends and before ${SCENE - 1}.
 - Each voiceover must describe what that scene shows. Together they should read as one ad.
 - background: two hex colors from the first screen's dominant palette.`;
@@ -78,24 +78,40 @@ const validate = (r, analyses) => {
     if (used.has(s.source)) errs.push(`${k}: ${s.source} used twice`);
     used.add(s.source);
     const custom = s.customTargets || {};
+    const detected = new Set(a.elements.map((e) => e.id));
     for (const [id, b] of Object.entries(custom)) {
-      const ok = Array.isArray(b) && b.length === 4 && b.every((n) => typeof n === "number" && n >= 0 && n <= 1000) &&
-        b[2] > b[0] && b[3] > b[1];
-      if (!ok) errs.push(`${k}: customTargets.${id} must be [ymin,xmin,ymax,xmax] within 0-1000`);
+      if (detected.has(id)) errs.push(`${k}: custom target ${id} conflicts with a detected element id`);
+      const ok = b && typeof b === "object" &&
+        ["x", "y", "w", "h"].every((key) => Number.isFinite(b[key])) &&
+        b.x >= 0 && b.y >= 0 && b.w > 0 && b.h > 0 &&
+        b.x + b.w <= 1 && b.y + b.h <= 1;
+      if (!ok) errs.push(`${k}: customTargets.${id} must have normalized x, y, w, h bounds within 0-1`);
     }
     const known = new Set([...a.elements.map((e) => e.id), ...Object.keys(custom)]);
     const c = s.camera || {};
     if (!known.has(c.to)) errs.push(`${k}: camera.to unknown: ${c.to}`);
-    if (!(c.start >= 0 && c.start < c.end && c.end <= SCENE)) errs.push(`${k}: camera times invalid`);
+    if (!(Number.isFinite(c.start) && Number.isFinite(c.end) && c.start >= 0 && c.start < c.end && c.end <= SCENE))
+      errs.push(`${k}: camera times invalid`);
     if (!Array.isArray(s.actions) || !s.actions.length) return errs.push(`${k}: actions missing`);
     for (const x of s.actions) {
       if (!ALLOWED.includes(x.type)) errs.push(`${k}: bad action type ${x.type}`);
       if (!known.has(x.target)) errs.push(`${k}: unknown target ${x.target}`);
-      if (typeof x.at !== "number" || x.at + (x.duration || 0) > SCENE) errs.push(`${k}: bad timing on ${x.type}`);
+      const duration = x.duration ?? 0;
+      if (!Number.isFinite(x.at) || x.at < 0 || !Number.isFinite(duration) || duration < 0 || x.at + duration > SCENE)
+        errs.push(`${k}: bad timing on ${x.type}`);
     }
     const click = s.actions.find((x) => x.type === "click");
     if (!click) errs.push(`${k}: needs a click`);
     else if (c.to !== click.target) errs.push(`${k}: camera.to must equal the click target`);
+    const move = s.actions.find((x) => x.type === "cursor_move");
+    if (!move) errs.push(`${k}: needs a cursor_move`);
+    else if (click && click.at < move.at + (move.duration || 0))
+      errs.push(`${k}: click must happen after cursor_move ends`);
+    else if (click && move.target !== click.target)
+      errs.push(`${k}: cursor_move and click must use the same target`);
+    const highlight = s.actions.find((x) => x.type === "highlight");
+    if (highlight && click && highlight.target !== click.target)
+      errs.push(`${k}: highlight and click must use the same target`);
   });
   return errs;
 };
@@ -159,8 +175,8 @@ async function direct({uploadDir, analyses}) {
     assets[a.filename] = {w: a.width, h: a.height};
     const t = (targets[a.filename] = {});
     for (const e of a.elements) t[e.id] = {x: e.x, y: e.y, w: e.w, h: e.h};
-    for (const [id, [y0, x0, y1, x1]] of Object.entries(s.customTargets || {}))
-      t[id] = {x: x0 / 1000, y: y0 / 1000, w: (x1 - x0) / 1000, h: (y1 - y0) / 1000};
+    for (const [id, box] of Object.entries(s.customTargets || {}))
+      t[id] = {x: box.x, y: box.y, w: box.w, h: box.h};
     return {
       id: `scene-${i + 1}`,
       source: a.filename,

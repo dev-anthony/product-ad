@@ -4,7 +4,7 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {Player, type PlayerRef} from "@remotion/player";
 import {Ad} from "@/remotion/Ad";
 import type {Music, Recipe, Scene} from "@/remotion/types";
-import {LEAD, OVERLAP} from "@/remotion/types";
+import {OVERLAP} from "@/remotion/types";
 import {Icon} from "./icons";
 
 const API = "http://localhost:4000";
@@ -2096,15 +2096,14 @@ export default function Home() {
                     {recipe.scenes.map((s, i) => {
                       if (!s.audio) return null;
 
-                      const w =
-                        Math.min(s.audioSecs ?? Math.max(1, s.duration - 1.3), s.duration - LEAD) * pps - 2;
+                      const w = Math.min(s.audioSecs ?? s.duration, s.duration) * pps - 2;
 
                       return (
                         <div
                           key={s.id}
                           className="absolute top-0 h-11 overflow-hidden rounded-lg bg-[#52ad97]"
                           style={{
-                            left: PAD + (starts[i] / fps + LEAD) * pps,
+                            left: PAD + (starts[i] / fps) * pps,
                             width: w,
                           }}
                         >

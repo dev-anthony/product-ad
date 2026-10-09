@@ -88,7 +88,12 @@ const toElements = (data, W, H) => {
     seen[base] = (seen[base] || 0) + 1;
     const id = seen[base] > 1 ? `${base}-${seen[base]}` : base;
     const r = (n) => Math.round(n * 10000) / 10000;
-    return {id, text: e.text, x: r(e.x), y: r(e.y), w: r(e.w), h: r(e.h)};
+    const x = r(e.x), y = r(e.y);
+    return {
+      id, text: e.text, x, y,
+      w: Math.min(r(e.w), 1 - x),
+      h: Math.min(r(e.h), 1 - y),
+    };
   });
 };
 
@@ -149,7 +154,7 @@ for (const [i, s] of recipe.scenes.entries()) {
       console.error("TTS failed:", e);
     }
   }
-  retime(s, secs);
+  retime(s, secs, i === recipe.scenes.length - 1, recipe.video.fps);
 }
 
 fs.writeFileSync(path.join(uploadDir, `${id}.recipe.json`), JSON.stringify(recipe, null, 2));
