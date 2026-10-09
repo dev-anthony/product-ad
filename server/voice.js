@@ -29,16 +29,33 @@ function mp3Seconds(buf) {
   return frames ? secs : 0;
 }
 
+// End of the last spoken word, from Edge's word timings. Returns 0 if unavailable.
+function speechEnd(subPath, fileSecs) {
+  try {
+    const parts = JSON.parse(fs.readFileSync(subPath, "utf8"));
+    const last = Math.max(...parts.map((p) => Number(p.end)));
+    const sec = last / 1000;
+    if (!Number.isFinite(sec) || sec < 0.3 || sec > fileSecs + 0.5) return 0; // sanity check
+    return sec;
+  } catch {
+    return 0;
+  }
+}
+
 async function makeVoice(text, voice, outPath) {
   const lang = voice.split("-").slice(0, 2).join("-");
-  const tts = new EdgeTTS({voice, lang, outputFormat: FORMAT});
+  const tts = new EdgeTTS({voice, lang, outputFormat: FORMAT, saveSubtitles: true});
+  const subPath = `${outPath}.json`;
   let lastErr;
   for (let i = 0; i < 2; i++) {
     try {
+      fs.rmSync(outPath, {force: true}); // never retry on top of a partial file
+      fs.rmSync(subPath, {force: true});
       await tts.ttsPromise(text, outPath);
       const buf = fs.readFileSync(outPath);
-      const exact = mp3Seconds(buf);
-      return exact > 0 ? exact : buf.length / (48000 / 8); // fallback: constant-bitrate estimate
+      const fileSecs = mp3Seconds(buf) || buf.length / (48000 / 8);
+      const end = speechEnd(subPath, fileSecs);
+      return end > 0 ? Math.min(fileSecs, end + 0.35) : fileSecs; // 0.35s natural pause after the last word
     } catch (e) {
       lastErr = e;
     }

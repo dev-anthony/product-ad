@@ -8,6 +8,7 @@ const sizeOf = require("image-size");
 const {createWorker} = require("tesseract.js");
 const {bundle} = require("@remotion/bundler");
 const {renderMedia, selectComposition} = require("@remotion/renderer");
+require("dotenv").config();
 const {direct} = require("./director");
 const {makeVoice} = require("./voice");
 const {retime} = require("./timing");

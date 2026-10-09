@@ -43,7 +43,7 @@ Direct an ad with one scene per screen you use, ${SCENE} seconds each. Return ex
         {"type": "cursor_move", "target": "<id>", "at": 2.5, "duration": 1},
         {"type": "click", "target": "<id>", "at": 3.8}
       ],
-      "customTargets": {"<new-id>": {"x": 0.4, "y": 0.5, "w": 0.1, "h": 0.06}},
+      "customTargets": {"<new-id>": {"label": "<what it is, e.g. 'Start free trial button'>"}},
       "voiceover": "<one short sentence, max 12 words>"
     }
   ]
@@ -55,7 +55,8 @@ Rules:
 - For a text feature, prefer its detected OCR id. For a CTA, use a custom target around the full visible button when its boundaries are clear; if they are not, use the OCR id for its label rather than guessing coordinates. OCR often misses buttons, especially light text on colored or white buttons, and returns junk. Custom targets use x, y, w, and h normalized from 0 to 1 relative to the screen. x and y are the top-left corner; w and h are the box size.
 - Allowed action types: cursor_move, click, highlight. All times are in seconds within 0-${SCENE}. The click must happen after the cursor_move ends and before ${SCENE - 1}.
 - Each voiceover must describe what that scene shows. Together they should read as one ad.
-- background: two hex colors from the first screen's dominant palette.`;
+- background: two hex colors from the first screen's dominant palette.`
+  .replace(/^- For a text feature,.*$/m, '- For a text feature, prefer its detected OCR id. For a button or icon OCR cannot see, add a custom target with a short "label" describing it (do NOT give coordinates; they are located separately). If a button\'s label was detected by OCR, use the OCR id instead.');
 
 const parse = (text) => {
   const s = text.indexOf("{"), e = text.lastIndexOf("}");
@@ -81,11 +82,8 @@ const validate = (r, analyses) => {
     const detected = new Set(a.elements.map((e) => e.id));
     for (const [id, b] of Object.entries(custom)) {
       if (detected.has(id)) errs.push(`${k}: custom target ${id} conflicts with a detected element id`);
-      const ok = b && typeof b === "object" &&
-        ["x", "y", "w", "h"].every((key) => Number.isFinite(b[key])) &&
-        b.x >= 0 && b.y >= 0 && b.w > 0 && b.h > 0 &&
-        b.x + b.w <= 1 && b.y + b.h <= 1;
-      if (!ok) errs.push(`${k}: customTargets.${id} must have normalized x, y, w, h bounds within 0-1`);
+      if (!b || typeof b.label !== "string" || b.label.trim().length < 3)
+        errs.push(`${k}: customTargets.${id} needs a "label" describing the control`);
     }
     const known = new Set([...a.elements.map((e) => e.id), ...Object.keys(custom)]);
     const c = s.camera || {};
@@ -116,7 +114,7 @@ const validate = (r, analyses) => {
   return errs;
 };
 
-async function generate(contents) {
+async function generate(contents, system = SYSTEM, extra = {}) {
   let lastErr;
   for (const model of MODELS) {
     for (let i = 0; i < 3; i++) {
@@ -124,7 +122,7 @@ async function generate(contents) {
         return await ai.models.generateContent({
           model,
           contents,
-          config: {systemInstruction: SYSTEM, responseMimeType: "application/json"},
+          config: {systemInstruction: system, responseMimeType: "application/json", ...extra},
         });
       } catch (e) {
         lastErr = e;
@@ -141,6 +139,58 @@ async function generate(contents) {
   err.status = 503;
   err.cause = lastErr;
   throw err;
+}
+
+const norm = (t) => t.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+const r4 = (n) => Math.round(n * 10000) / 10000;
+
+async function locate(file, label) {
+  const parts = [
+    {inlineData: {mimeType: mimeOf(file), data: fs.readFileSync(file).toString("base64")}},
+    {text: `Find this UI element: "${label}". Return a JSON array with exactly one object: [{"label": "...", "box_2d": [ymin, xmin, ymax, xmax]}]. Coordinates are integers normalized to 0-1000 over the whole image. The box must tightly enclose the entire element, including a button's filled background or border, not just its text. If it is not visible, return [].`},
+  ];
+  const res = await generate(
+    [{role: "user", parts}],
+    "You are a precise UI element detector. Return only JSON.",
+    {temperature: 0},
+  );
+  const text = res.text || "";
+  const s = text.indexOf("["), e = text.lastIndexOf("]");
+  if (s < 0 || e < 0) return null;
+  const b = JSON.parse(text.slice(s, e + 1))[0]?.box_2d;
+  if (!Array.isArray(b) || b.length !== 4 || !b.every(Number.isFinite)) return null;
+  let [y0, x0, y1, x1] = b.map((n) => Math.min(1000, Math.max(0, n)) / 1000);
+  if (y1 < y0) [y0, y1] = [y1, y0];
+  if (x1 < x0) [x0, x1] = [x1, x0];
+  const x = r4(x0), y = r4(y0);
+  const box = {x, y, w: Math.min(r4(x1 - x0), 1 - x), h: Math.min(r4(y1 - y0), 1 - y)};
+  if (box.w < 0.01 || box.h < 0.008 || box.w * box.h > 0.35) return null; // junk or "whole screen"
+  return box;
+}
+
+// Gemini's box, cross-checked against OCR where OCR saw the label.
+async function resolveBox(a, file, label) {
+  const l = norm(label);
+  const match = a.elements.filter(usable)
+    .filter((e) => { const t = norm(e.text); return t.length >= 3 && l.includes(t); })
+    .sort((p, q) => q.text.length - p.text.length)[0];
+  let box = null;
+  for (let i = 0; i < 2 && !box; i++) {
+    try { box = await locate(file, label); } catch (e) { console.warn("locate failed:", e.message); }
+  }
+  if (!match) return box;
+  const cx = match.x + match.w / 2, cy = match.y + match.h / 2;
+  const inside = box && cx >= box.x && cx <= box.x + box.w && cy >= box.y && cy <= box.y + box.h;
+  if (inside) return box;
+  // OCR found the label but Gemini's box missed it: pad the text into a button-sized region
+  const padPx = match.h * a.height * 0.8;
+  const px = padPx / a.width, py = match.h * 0.48;
+  const x = Math.max(0, match.x - px), y = Math.max(0, match.y - py);
+  return {
+    x: r4(x), y: r4(y),
+    w: r4(Math.min(1 - x, match.w + 2 * px)),
+    h: r4(Math.min(1 - y, match.h + 2 * py)),
+  };
 }
 
 async function direct({uploadDir, analyses}) {
@@ -170,22 +220,35 @@ async function direct({uploadDir, analyses}) {
   if (errs.length) throw new Error(`Recipe failed validation: ${errs.join("; ")}`);
 
   const assets = {}, targets = {};
-  const scenes = result.scenes.map((s, i) => {
+  const scenes = [];
+  for (const [i, s] of result.scenes.entries()) {
     const a = analyses[Number(s.source.split("-")[1]) - 1];
     assets[a.filename] = {w: a.width, h: a.height};
     const t = (targets[a.filename] = {});
     for (const e of a.elements) t[e.id] = {x: e.x, y: e.y, w: e.w, h: e.h};
-    for (const [id, box] of Object.entries(s.customTargets || {}))
-      t[id] = {x: box.x, y: box.y, w: box.w, h: box.h};
-    return {
+
+    let to = s.camera.to;
+    const label = s.customTargets?.[to]?.label;
+    if (label) {
+      const box = await resolveBox(a, path.join(uploadDir, a.filename), label);
+      if (box) t[to] = box;
+      else {
+        const fb = a.elements.filter(usable)[0];
+        if (!fb) throw new Error(`Could not locate "${label}" on ${s.source}`);
+        console.warn(`Scene ${i + 1}: could not locate "${label}", using OCR target ${fb.id}`);
+        t[s.camera.to] = {x: fb.x, y: fb.y, w: fb.w, h: fb.h};
+        to = fb.id;
+      }
+    }
+    scenes.push({
       id: `scene-${i + 1}`,
       source: a.filename,
       duration: SCENE,
-      camera: {from: "full", to: s.camera.to, start: s.camera.start, end: s.camera.end},
+      camera: {from: "full", to, start: s.camera.start, end: s.camera.end},
       actions: s.actions,
       voiceover: s.voiceover || "",
-    };
-  });
+    });
+  }
 
   return {
     video: {fps: 30, width: 1920, height: 1080, background: result.background},
