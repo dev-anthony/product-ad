@@ -1,0 +1,263 @@
+{
+  "filename": "1791552516363-Screenshot__485_.png",
+  "width": 1366,
+  "height": 768,
+  "elements": [
+    {
+      "id": "createa-project",
+      "text": "Createa Project",
+      "x": 0.2225,
+      "y": 0.1393,
+      "w": 0.1113,
+      "h": 0.0352
+    },
+    {
+      "id": "x",
+      "text": "x",
+      "x": 0.7958,
+      "y": 0.1589,
+      "w": 0.0073,
+      "h": 0.013
+    },
+    {
+      "id": "connect-a-studio-folder-and-st",
+      "text": "Connect a studio folder and start protecting your work",
+      "x": 0.2233,
+      "y": 0.1628,
+      "w": 0.2372,
+      "h": 0.0391
+    },
+    {
+      "id": "project-name",
+      "text": "Project Name",
+      "x": 0.1881,
+      "y": 0.2331,
+      "w": 0.0688,
+      "h": 0.0391
+    },
+    {
+      "id": "project-folder-and-files",
+      "text": "Project folder and files",
+      "x": 0.4736,
+      "y": 0.2331,
+      "w": 0.1164,
+      "h": 0.0391
+    },
+    {
+      "id": "my-awesome-beat",
+      "text": "my-awesome-beat",
+      "x": 0.1977,
+      "y": 0.2969,
+      "w": 0.101,
+      "h": 0.0169
+    },
+    {
+      "id": "use",
+      "text": "Use",
+      "x": 0.1881,
+      "y": 0.3411,
+      "w": 0.0146,
+      "h": 0.0104
+    },
+    {
+      "id": "the",
+      "text": "the",
+      "x": 0.2152,
+      "y": 0.3464,
+      "w": 0.0044,
+      "h": 0.0052
+    },
+    {
+      "id": "name",
+      "text": "name",
+      "x": 0.2438,
+      "y": 0.3464,
+      "w": 0.0037,
+      "h": 0.0052
+    },
+    {
+      "id": "you",
+      "text": "you",
+      "x": 0.2577,
+      "y": 0.3438,
+      "w": 0.0073,
+      "h": 0.0078
+    },
+    {
+      "id": "recognize-in-your",
+      "text": "recognize in your",
+      "x": 0.2731,
+      "y": 0.3255,
+      "w": 0.0695,
+      "h": 0.0391
+    },
+    {
+      "id": "studio",
+      "text": "studio.",
+      "x": 0.3477,
+      "y": 0.349,
+      "w": 0.0249,
+      "h": 0.0026
+    },
+    {
+      "id": "drop-files-here-or-connect-the",
+      "text": "Drop files here or connect the full project folder.",
+      "x": 0.519,
+      "y": 0.3555,
+      "w": 0.2408,
+      "h": 0.0195
+    },
+    {
+      "id": "session-details",
+      "text": "Session details",
+      "x": 0.1874,
+      "y": 0.3711,
+      "w": 0.0769,
+      "h": 0.0391
+    },
+    {
+      "id": "connect-folder",
+      "text": "© Connect folder",
+      "x": 0.6325,
+      "y": 0.388,
+      "w": 0.0937,
+      "h": 0.0521
+    },
+    {
+      "id": "140",
+      "text": "140",
+      "x": 0.2042,
+      "y": 0.4753,
+      "w": 0.0146,
+      "h": 0.013
+    },
+    {
+      "id": "g-minor",
+      "text": "G minor",
+      "x": 0.3331,
+      "y": 0.4596,
+      "w": 0.0403,
+      "h": 0.0417
+    },
+    {
+      "id": "signature",
+      "text": "signature",
+      "x": 0.2218,
+      "y": 0.5247,
+      "w": 0.0403,
+      "h": 0.0117
+    },
+    {
+      "id": "ple",
+      "text": "ple",
+      "x": 0.3485,
+      "y": 0.5273,
+      "w": 0.011,
+      "h": 0.0052
+    },
+    {
+      "id": "rate",
+      "text": "rate",
+      "x": 0.366,
+      "y": 0.5247,
+      "w": 0.0132,
+      "h": 0.0078
+    },
+    {
+      "id": "who-can-access-this-project",
+      "text": "Who can access this project?",
+      "x": 0.1874,
+      "y": 0.6628,
+      "w": 0.1508,
+      "h": 0.0195
+    },
+    {
+      "id": "b-private-project",
+      "text": "B Private project",
+      "x": 0.2006,
+      "y": 0.7005,
+      "w": 0.0805,
+      "h": 0.0391
+    },
+    {
+      "id": "open-project",
+      "text": "Open project",
+      "x": 0.3507,
+      "y": 0.7161,
+      "w": 0.0556,
+      "h": 0.0143
+    },
+    {
+      "id": "only-you-and",
+      "text": "Only you and",
+      "x": 0.2182,
+      "y": 0.7396,
+      "w": 0.0469,
+      "h": 0.0104
+    },
+    {
+      "id": "invited",
+      "text": "invited",
+      "x": 0.2701,
+      "y": 0.7422,
+      "w": 0.0212,
+      "h": 0.0065
+    },
+    {
+      "id": "cancel",
+      "text": "Cancel",
+      "x": 0.3294,
+      "y": 0.8307,
+      "w": 0.0351,
+      "h": 0.013
+    },
+    {
+      "id": "dd-create-project-0-files",
+      "text": "dd Create project (0 files)",
+      "x": 0.5783,
+      "y": 0.8268,
+      "w": 0.1354,
+      "h": 0.0221
+    },
+    {
+      "id": "z",
+      "text": "z",
+      "x": 0.4392,
+      "y": 0.9622,
+      "w": 0.0117,
+      "h": 0.0039
+    },
+    {
+      "id": "1932",
+      "text": "1932",
+      "x": 0.9261,
+      "y": 0.9557,
+      "w": 0.019,
+      "h": 0.0117
+    },
+    {
+      "id": "d",
+      "text": "D",
+      "x": 0.7042,
+      "y": 0.9609,
+      "w": 0.0154,
+      "h": 0.026
+    },
+    {
+      "id": "clear",
+      "text": "clear",
+      "x": 0.7892,
+      "y": 0.9674,
+      "w": 0.0198,
+      "h": 0.013
+    },
+    {
+      "id": "item",
+      "text": "~",
+      "x": 0.8265,
+      "y": 0.9688,
+      "w": 0.0088,
+      "h": 0.0091
+    }
+  ]
+}

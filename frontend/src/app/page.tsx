@@ -77,6 +77,10 @@ const size = (n: number) =>
     ? `${(n / 1048576).toFixed(1)} MB`
     : `${Math.max(1, Math.round(n / 1024))} KB`;
 
+const isImageFile = (file: File) =>
+  ["image/png", "image/jpeg", "image/webp"].includes(file.type.toLowerCase()) ||
+  /\.(png|jpe?g|webp)$/i.test(file.name);
+
 const minLen = (s: Scene) =>
   Math.max(
     2,
@@ -444,25 +448,37 @@ export default function Home() {
     }
   }, [frame, playing, pps, fps]);
 
-  const post = async (path: string, body: BodyInit, json = true) => {
+  const post = async <T,>(path: string, body: BodyInit, json = true): Promise<T> => {
     const res = await fetch(API + path, {
       method: "POST",
       headers: json ? {"Content-Type": "application/json"} : undefined,
       body,
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Request failed");
+    const response = await res.text();
+    let data: unknown;
+    try {
+      data = response ? JSON.parse(response) : {};
+    } catch {
+      data = {error: response};
     }
 
-    return data;
+    if (!res.ok) {
+      const message = typeof data === "object" && data !== null && "error" in data &&
+        typeof data.error === "string" ? data.error : "Request failed";
+      throw new Error(message);
+    }
+
+    return data as T;
   };
 
   const addFiles = (files: File[]) => {
+    if (busy) {
+      setStatus("Wait for the current generation to finish before adding screenshots.");
+      return;
+    }
     const add = files
-      .filter((f) => f.type.startsWith("image/"))
+      .filter(isImageFile)
       .map((file) => ({
         id: `${file.name}-${file.size}-${Math.random().toString(36).slice(2, 6)}`,
         file,
@@ -471,6 +487,10 @@ export default function Home() {
 
     if (add.length) {
       setMedia((m) => [...m, ...add]);
+    }
+    const unsupported = files.filter((file) => !isImageFile(file) && !file.type.startsWith("audio/"));
+    if (unsupported.length) {
+      setStatus(`Skipped unsupported file${unsupported.length === 1 ? "" : "s"}: ${unsupported.map((f) => f.name).join(", ")}`);
     }
   };
 
@@ -482,7 +502,7 @@ export default function Home() {
         const form = new FormData();
         form.append("audio", file);
 
-        const up = await post("/api/upload-audio", form, false);
+        const up = await post<{filename: string}>("/api/upload-audio", form, false);
 
         const r = await loadPeaks(`${API}/files/${up.filename}`);
 
@@ -528,27 +548,34 @@ export default function Home() {
 
     try {
       const names: string[] = [];
+      const uploadedById: Record<string, string> = {};
+      const failures: string[] = [];
 
       for (let i = 0; i < media.length; i++) {
-        setStatus(`Uploading ${i + 1}/${media.length}...`);
-
-        const form = new FormData();
-        form.append("screenshot", media[i].file);
-
-        const up = await post("/api/upload", form, false);
-
-        setStatus(`Analyzing ${i + 1}/${media.length}...`);
-
-        await post("/api/analyze", JSON.stringify({filename: up.filename}));
-
-        names.push(up.filename);
+        const item = media[i];
+        setStatus(`Uploading and analyzing ${i + 1}/${media.length}: ${item.file.name}`);
+        try {
+          const form = new FormData();
+          form.append("screenshot", item.file);
+          const up = await post<{filename: string}>("/api/upload", form, false);
+          uploadedById[item.id] = up.filename;
+          await post("/api/analyze", JSON.stringify({filename: up.filename}));
+          names.push(up.filename);
+        } catch (e) {
+          failures.push(`${item.file.name}: ${e instanceof Error ? e.message : String(e)}`);
+        }
       }
 
-      setMedia((m) => m.map((x, i) => ({...x, server: names[i]})));
+      setMedia((m) => m.map((x) => ({...x, server: uploadedById[x.id] || x.server})));
+      if (failures.length) {
+        throw new Error(
+          `Analyzed ${names.length} of ${media.length} screenshots; generation stopped so none are silently omitted. ${failures.join("; ")}`,
+        );
+      }
 
       setStatus("Directing with Gemini and recording voiceover...");
 
-      const rc = await post(
+      const rc = await post<{id: string; recipe: Recipe; voiceError: string}>(
         "/api/recipe",
         JSON.stringify({filenames: names, voice}),
       );
@@ -575,7 +602,7 @@ export default function Home() {
     setStatus("Exporting (can take a few minutes)...");
 
     try {
-      const d = await post(
+      const d = await post<{video: string}>(
         "/api/render",
         JSON.stringify({id: projectId, recipe: {...recipe, music}}),
       );
@@ -2317,7 +2344,7 @@ export default function Home() {
 
       {(busy || toast) && status && (
         <div
-          className={`fixed bottom-[78px] left-1/2 z-[200] flex max-w-[80vw] -translate-x-1/2 items-center gap-2.5 rounded-full border border-[#2e2e34] bg-[rgba(28,28,32,.97)] px-4 py-2.5 shadow-[0_10px_30px_rgba(0,0,0,.5)] ${
+          className={`fixed bottom-[78px] left-1/2 z-[200] flex max-h-40 max-w-[80vw] -translate-x-1/2 items-start gap-2.5 overflow-y-auto whitespace-normal break-words rounded-xl border border-[#2e2e34] bg-[rgba(28,28,32,.97)] px-4 py-2.5 text-left shadow-[0_10px_30px_rgba(0,0,0,.5)] ${
             busy ? "[&_svg]:animate-spin" : ""
           }`}
         >

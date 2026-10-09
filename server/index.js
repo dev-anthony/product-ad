@@ -3,6 +3,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const sizeOf = require("image-size");
 const {createWorker} = require("tesseract.js");
 const {bundle} = require("@remotion/bundler");
@@ -24,13 +25,21 @@ const storage = multer.diskStorage({
   destination: uploadDir,
   filename: (req, file, cb) => {
     const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
-    cb(null, `${Date.now()}-${safe}`);
+    cb(null, `${Date.now()}-${crypto.randomUUID()}-${safe}`);
   },
 });
+const imageExtensions = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 const upload = multer({
   storage,
   limits: {fileSize: 10 * 1024 * 1024},
-  fileFilter: (req, file, cb) => cb(null, /image\/(png|jpeg|webp)/.test(file.mimetype)),
+  fileFilter: (req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    if (/^image\/(png|jpeg|webp)$/.test(file.mimetype) || imageExtensions.has(extension)) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error("Unsupported screenshot type. Upload a PNG, JPG, JPEG, or WEBP image."));
+  },
 });
 const uploadAudio = multer({
   storage,
@@ -114,8 +123,12 @@ app.post("/api/analyze", async (req, res) => {
     const {width, height} = sizeOf(fs.readFileSync(filePath));
     const hasLocal = fs.existsSync(path.join(__dirname, "eng.traineddata"));
     const worker = await createWorker("eng", 1, hasLocal ? {langPath: __dirname, gzip: false} : {});
-    const {data} = await worker.recognize(filePath, {}, {blocks: true});
-    await worker.terminate();
+    let data;
+    try {
+      ({data} = await worker.recognize(filePath, {}, {blocks: true}));
+    } finally {
+      await worker.terminate();
+    }
 
     const elements = toElements(data, width, height);
     const result = {filename, width, height, elements};
@@ -187,6 +200,21 @@ app.post("/api/render", async (req, res) => {
     console.error(err);
     res.status(500).json({error: String(err.message || err)});
   }
+});
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  if (err instanceof multer.MulterError) {
+    const isAudio = req.path === "/api/upload-audio";
+    const limit = isAudio ? "30 MB" : "10 MB";
+    const label = isAudio ? "Audio" : "Screenshot";
+    const message = err.code === "LIMIT_FILE_SIZE"
+      ? `${label} exceeds the ${limit} per-file limit.`
+      : `${label} upload failed: ${err.message}`;
+    return res.status(400).json({error: message});
+  }
+  if (err) return res.status(400).json({error: err.message || "Request failed"});
+  return next();
 });
 
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
