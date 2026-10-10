@@ -31,7 +31,7 @@ ${analyses.map((a, i) =>
   a.elements.filter(usable).map((e) => `${e.id} | ${e.text.slice(0, 40)} | ${e.x},${e.y},${e.w},${e.h}`).join("\n")
 ).join("\n\n")}
 
-Direct an ad with one scene per screen you use, ${SCENE} seconds each. Return exactly this JSON shape:
+Direct an ad with exactly one scene for EVERY screen, ${SCENE} seconds each (${analyses.length} scenes in total). Return exactly this JSON shape:
 {
   "background": {"from": "#000000", "to": "#111111"},
   "scenes": [
@@ -50,7 +50,7 @@ Direct an ad with one scene per screen you use, ${SCENE} seconds each. Return ex
 }
 
 Rules:
-- Use 1 to ${analyses.length} screens, each at most once. Choose the order that tells the best story: hook, then key features, then call to action.
+- Use ALL ${analyses.length} screens, each exactly once, so the output has exactly ${analyses.length} scenes. Choose the order that tells the best story: hook, then key features, then call to action. Never skip a screen, even if it looks similar to another one: pick a different control on it and write a different voiceover.
 - In each scene prefer the primary call-to-action button or actionable control. Never click headings, explanatory text, browser controls, or decorative elements. If there is no actionable control, choose a clear feature label. The camera.to, highlight target, cursor_move target and click target must all be the SAME id.
 - For a text feature, prefer its detected OCR id. For a CTA, use a custom target around the full visible button when its boundaries are clear; if they are not, use the OCR id for its label rather than guessing coordinates. OCR often misses buttons, especially light text on colored or white buttons, and returns junk. Custom targets use x, y, w, and h normalized from 0 to 1 relative to the screen. x and y are the top-left corner; w and h are the box size.
 - Allowed action types: cursor_move, click, highlight. All times are in seconds within 0-${SCENE}. The click must happen after the cursor_move ends and before ${SCENE - 1}.
@@ -111,6 +111,8 @@ const validate = (r, analyses) => {
     if (highlight && click && highlight.target !== click.target)
       errs.push(`${k}: highlight and click must use the same target`);
   });
+  const missing = analyses.map((_, i) => `screen-${i + 1}`).filter((s) => !used.has(s));
+  if (missing.length) errs.push(`every screen must be used exactly once; missing: ${missing.join(", ")}`);
   return errs;
 };
 
@@ -204,7 +206,7 @@ async function direct({uploadDir, analyses}) {
   const contents = [{role: "user", parts}];
 
   let result, errs = [];
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     const response = await generate(contents);
     const text = response.text || "";
     try {

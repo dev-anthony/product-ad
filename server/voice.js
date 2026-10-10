@@ -29,19 +29,21 @@ function mp3Seconds(buf) {
   return frames ? secs : 0;
 }
 
-// End of the last spoken word, from Edge's word timings. Returns 0 if unavailable.
-function speechEnd(subPath, fileSecs) {
+// First and last spoken word, from Edge's word timings. Returns null if unavailable.
+function speechSpan(subPath, fileSecs) {
   try {
     const parts = JSON.parse(fs.readFileSync(subPath, "utf8"));
-    const last = Math.max(...parts.map((p) => Number(p.end)));
-    const sec = last / 1000;
-    if (!Number.isFinite(sec) || sec < 0.3 || sec > fileSecs + 0.5) return 0; // sanity check
-    return sec;
+    const first = Math.min(...parts.map((p) => Number(p.start))) / 1000;
+    const last = Math.max(...parts.map((p) => Number(p.end))) / 1000;
+    if (![first, last].every(Number.isFinite) || first < 0 || first >= last || last < 0.3 || last > fileSecs + 0.5)
+      return null; // sanity check
+    return {first, last};
   } catch {
-    return 0;
+    return null;
   }
 }
 
+// Returns {lead, secs}: seconds of silence to skip at the start, and the length of the speech itself.
 async function makeVoice(text, voice, outPath) {
   const lang = voice.split("-").slice(0, 2).join("-");
   const tts = new EdgeTTS({voice, lang, outputFormat: FORMAT, saveSubtitles: true});
@@ -54,8 +56,16 @@ async function makeVoice(text, voice, outPath) {
       await tts.ttsPromise(text, outPath);
       const buf = fs.readFileSync(outPath);
       const fileSecs = mp3Seconds(buf) || buf.length / (48000 / 8);
-      const end = speechEnd(subPath, fileSecs);
-      return end > 0 ? Math.min(fileSecs, end + 0.35) : fileSecs; // 0.35s natural pause after the last word
+      const span = speechSpan(subPath, fileSecs);
+      console.log(
+        `[voice] ${outPath.split(/[\\/]/).pop()}: file ${fileSecs.toFixed(2)}s, speech ${
+          span ? span.first.toFixed(2) + "-" + span.last.toFixed(2) : "unknown"
+        }s, ${text.split(/\s+/).length} words`,
+      );
+      if (!span) return {lead: 0, secs: fileSecs};
+      const lead = Math.max(0, span.first - 0.05); // skip the silence before the first word
+      const end = Math.min(fileSecs, span.last + 0.08); // tiny natural breath after the last word
+      return {lead, secs: end - lead};
     } catch (e) {
       lastErr = e;
     }

@@ -16,6 +16,7 @@ export type Scene = {
   voiceover?: string;
   audio?: string;
   audioSecs?: number;
+  audioStart?: number;
 };
 
 export type Music = {

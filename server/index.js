@@ -171,9 +171,11 @@ for (const [i, s] of recipe.scenes.entries()) {
   if (s.voiceover) {
     const name = `${id}-scene-${i + 1}.mp3`;
     try {
-      secs = await makeVoice(s.voiceover, voice, path.join(uploadDir, name));
+      const v = await makeVoice(s.voiceover, voice, path.join(uploadDir, name));
+      secs = v.secs;
       s.audio = name;
-      s.audioSecs = secs;
+      s.audioSecs = v.secs;
+      s.audioStart = v.lead;
     } catch (e) {
       secs = 0;
       voiceError = String(e.message || e);

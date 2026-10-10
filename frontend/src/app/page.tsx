@@ -611,6 +611,7 @@ export default function Home() {
 
       setVideoUrl(URL.createObjectURL(blob));
       setShowExport(true);
+      player.current?.pause();
       setStatus("Export done");
     } catch (e: any) {
       setStatus(e.message || "Could not reach the server.");
