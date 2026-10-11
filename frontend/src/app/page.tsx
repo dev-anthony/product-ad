@@ -4,7 +4,7 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {Player, type PlayerRef} from "@remotion/player";
 import {Ad} from "@/remotion/Ad";
 import type {Music, Recipe, Scene} from "@/remotion/types";
-import {OVERLAP} from "@/remotion/types";
+import {OVERLAP, isShot} from "@/remotion/types";
 import {Icon} from "./icons";
 
 const API = "http://localhost:4000";
@@ -80,6 +80,11 @@ const size = (n: number) =>
 const isImageFile = (file: File) =>
   ["image/png", "image/jpeg", "image/webp"].includes(file.type.toLowerCase()) ||
   /\.(png|jpe?g|webp)$/i.test(file.name);
+
+const sceneLabel = (s: Scene, i: number) =>
+  isShot(s)
+    ? `Scene ${i + 1} · ${s.camera.to}`
+    : `Scene ${i + 1} · ${s.kind === "end" ? "End card" : s.kind === "title" ? "Title" : "Problem"}`;
 
 const minLen = (s: Scene) =>
   Math.max(
@@ -1037,7 +1042,7 @@ export default function Home() {
   const clipItems: MenuItem[] = [
     ...(recipe?.scenes.map((s, i) => ({
       label: `Scene ${i + 1}`,
-      hint: s.camera.to.slice(0, 16),
+      hint: isShot(s) ? s.camera.to.slice(0, 16) : s.kind,
       run: () => selectScene(i),
     })) ?? []),
 
@@ -1563,12 +1568,23 @@ export default function Home() {
               {tab === "edit" &&
                 (scene ? (
                   <div className="flex flex-col gap-3 py-1.5">
-                    <div
-                      className="aspect-video rounded-[10px] border border-[#2e2e34] bg-cover bg-left-top"
-                      style={{
-                        backgroundImage: `url(${API}/files/${scene.source})`,
-                      }}
-                    />
+                    {isShot(scene) ? (
+                      <div
+                        className="aspect-video rounded-[10px] border border-[#2e2e34] bg-cover bg-left-top"
+                        style={{
+                          backgroundImage: `url(${API}/files/${scene.source})`,
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="grid aspect-video place-items-center rounded-[10px] border border-[#2e2e34] p-4 text-center text-lg font-semibold"
+                        style={{
+                          background: `linear-gradient(135deg, ${bg?.from}, ${bg?.to})`,
+                        }}
+                      >
+                        {scene.title || scene.lines?.join(" · ")}
+                      </div>
+                    )}
 
                     <div className="flex flex-col gap-2.5 rounded-xl border border-[#2e2e34] bg-[#212125] p-3">
                       <div className="flex items-center justify-between gap-2.5">
@@ -1582,7 +1598,7 @@ export default function Home() {
                         <span>Target</span>
 
                         <span className="font-mono text-[#86efac]">
-                          {scene.camera.to}
+                          {isShot(scene) ? scene.camera.to : scene.kind}
                         </span>
                       </div>
 
@@ -2024,7 +2040,7 @@ export default function Home() {
               {recipe ? (
                 <>
                   <div className="relative mt-1.5 h-7">
-                    {recipe.scenes.map((s, i) => (
+                    {recipe.scenes.map((s, i) => !isShot(s) ? null : (
                       <div
                         key={s.id}
                         className="absolute top-0 flex h-7 items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-b from-[#9a4de0] to-[#8a3fd4] px-1.5 text-[11.5px] whitespace-nowrap"
@@ -2066,15 +2082,19 @@ export default function Home() {
                           }}
                         >
                           <div
-                            className="absolute bottom-0 left-0 top-0 w-12 rounded-l-[9px] bg-cover bg-left-top"
-                            style={{
-                              backgroundImage: `url(${API}/files/${s.source})`,
-                            }}
-                          />
+                            className="absolute bottom-0 left-0 top-0 grid w-12 place-items-center rounded-l-[9px] bg-cover bg-left-top"
+                            style={
+                              isShot(s)
+                                ? {backgroundImage: `url(${API}/files/${s.source})`}
+                                : {background: "#26262e"}
+                            }
+                          >
+                            {!isShot(s) && <Icon n="sparkle" size={16} />}
+                          </div>
 
                           <div className="absolute left-14 right-2 top-1.5 flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-[11.5px]">
                             <Icon n="film" size={13} />
-                            Scene {i + 1} · {s.camera.to}
+                            {sceneLabel(s, i)}
                           </div>
 
                           <div
@@ -2124,7 +2144,7 @@ export default function Home() {
                     {recipe.scenes.map((s, i) => {
                       if (!s.audio) return null;
 
-                      const w = Math.min(s.audioSecs ?? s.duration, s.duration) * pps - 2;
+                      const w = (s.audioSecs ?? s.duration) * pps - 2;
 
                       return (
                         <div

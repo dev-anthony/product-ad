@@ -23,7 +23,7 @@ const mimeOf = (f) => {
 
 const usable = (e) => e.text.replace(/[^a-zA-Z0-9]/g, "").length >= 3;
 
-const buildPrompt = (analyses) => `You are given ${analyses.length} screenshots of one product, labeled screen-1 to screen-${analyses.length} in the order shown.
+const buildPrompt = (analyses) => `You are given ${analyses.length} screenshots of one product, labeled screen-1 to screen-${analyses.length}.
 
 Detected text per screen (id | text | x,y,w,h as 0-1 fractions):
 ${analyses.map((a, i) =>
@@ -31,32 +31,38 @@ ${analyses.map((a, i) =>
   a.elements.filter(usable).map((e) => `${e.id} | ${e.text.slice(0, 40)} | ${e.x},${e.y},${e.w},${e.h}`).join("\n")
 ).join("\n\n")}
 
-Direct an ad with exactly one scene for EVERY screen, ${SCENE} seconds each (${analyses.length} scenes in total). Return exactly this JSON shape:
+Create a short story-driven ad with this arc: PROBLEM, then PRODUCT REVEAL, then HOW IT SOLVES IT, then an END CARD.
+Return exactly this JSON:
 {
   "background": {"from": "#000000", "to": "#111111"},
+  "problem": {
+    "lines": ["<pain, max 6 words>", "<pain, max 6 words>", "<punchline, max 5 words>"],
+    "voiceover": "<1-2 punchy sentences, max 20 words. The pain or frustration. Do NOT name the product>"
+  },
+  "product": {
+    "name": "<product name, read from the screenshots>",
+    "tagline": "<max 8 words, like 'The Screen Time alternative for Mac'>",
+    "voiceover": "<one sentence, max 12 words, introduces the product by name>"
+  },
   "scenes": [
     {
-      "source": "screen-1",
-      "camera": {"to": "<target id>", "start": 1, "end": 2.5},
-      "actions": [
-        {"type": "highlight", "target": "<id>", "at": 1.8, "duration": 2},
-        {"type": "cursor_move", "target": "<id>", "at": 2.5, "duration": 1},
-        {"type": "click", "target": "<id>", "at": 3.8}
-      ],
-      "customTargets": {"<new-id>": {"label": "<what it is, e.g. 'Start free trial button'>"}},
-      "voiceover": "<one short sentence, max 12 words>"
+      "voiceover": "<2-3 short punchy sentences walking through ALL shots, max 12 words each>",
+      "shots": [{"source": "screen-1", "target": "<id>", "label": "<only for a custom target>"}]
     }
-  ]
+  ],
+  "cta": {
+    "headline": "<max 6 words, e.g. 'Find out where your day went.'>",
+    "url": "<website only if visible in a screenshot, else empty string>",
+    "voiceover": "<one short sentence, max 12 words>"
+  }
 }
 
 Rules:
-- Use ALL ${analyses.length} screens, each exactly once, so the output has exactly ${analyses.length} scenes. Choose the order that tells the best story: hook, then key features, then call to action. Never skip a screen, even if it looks similar to another one: pick a different control on it and write a different voiceover.
-- In each scene prefer the primary call-to-action button or actionable control. Never click headings, explanatory text, browser controls, or decorative elements. If there is no actionable control, choose a clear feature label. The camera.to, highlight target, cursor_move target and click target must all be the SAME id.
-- For a text feature, prefer its detected OCR id. For a CTA, use a custom target around the full visible button when its boundaries are clear; if they are not, use the OCR id for its label rather than guessing coordinates. OCR often misses buttons, especially light text on colored or white buttons, and returns junk. Custom targets use x, y, w, and h normalized from 0 to 1 relative to the screen. x and y are the top-left corner; w and h are the box size.
-- Allowed action types: cursor_move, click, highlight. All times are in seconds within 0-${SCENE}. The click must happen after the cursor_move ends and before ${SCENE - 1}.
-- Each voiceover must describe what that scene shows. Together they should read as one ad.
-- background: two hex colors from the first screen's dominant palette.`
-  .replace(/^- For a text feature,.*$/m, '- For a text feature, prefer its detected OCR id. For a button or icon OCR cannot see, add a custom target with a short "label" describing it (do NOT give coordinates; they are located separately). If a button\'s label was detected by OCR, use the OCR id instead.');
+- "scenes" has 1 to 3 scenes showing how the product solves the problem, one feature theme each. Group similar or related screens into the same scene. Every screen appears in exactly one shot, exactly once. Never skip a screen.
+- Within a scene, shots play in order and the voiceover walks through them.
+- Each shot's target: prefer an actionable control or key feature label. Never headings, browser chrome or decoration. Prefer a detected OCR id. If the control is a button/icon OCR cannot see, give a NEW id as target plus a short "label" describing it (no coordinates).
+- Voiceover style: short, confident, plain spoken English. Fragments are fine ("No account." "Punch in."). No emojis, no repeated phrases. All voiceovers together read as one continuous ad.
+- background: two hex colors from the first screen's dominant palette.`;
 
 const parse = (text) => {
   const s = text.indexOf("{"), e = text.lastIndexOf("}");
@@ -66,50 +72,38 @@ const parse = (text) => {
 
 const validate = (r, analyses) => {
   const errs = [];
-  if (!Array.isArray(r.scenes) || !r.scenes.length) return ["scenes missing"];
   const hex = /^#[0-9a-fA-F]{6}$/;
   if (!r.background || !hex.test(r.background.from) || !hex.test(r.background.to))
     errs.push("background must be two #rrggbb colors");
+  const p = r.problem;
+  if (!p || !Array.isArray(p.lines) || p.lines.length < 1 || p.lines.length > 3 ||
+      p.lines.some((l) => typeof l !== "string" || !l.trim()) || !String(p.voiceover || "").trim())
+    errs.push("problem needs 1-3 lines and a voiceover");
+  const pr = r.product, c = r.cta;
+  if (!pr || !String(pr.name || "").trim() || !String(pr.tagline || "").trim() || !String(pr.voiceover || "").trim())
+    errs.push("product needs name, tagline and voiceover");
+  if (!c || !String(c.headline || "").trim() || !String(c.voiceover || "").trim())
+    errs.push("cta needs headline and voiceover");
+  if (!Array.isArray(r.scenes) || !r.scenes.length || r.scenes.length > 3)
+    return [...errs, "scenes must have 1-3 items"];
   const used = new Set();
   r.scenes.forEach((s, i) => {
     const k = `scene ${i + 1}`;
-    const idx = Number(/^screen-(\d+)$/.exec(s.source || "")?.[1]);
-    const a = analyses[idx - 1];
-    if (!a) return errs.push(`${k}: unknown source ${s.source}`);
-    if (used.has(s.source)) errs.push(`${k}: ${s.source} used twice`);
-    used.add(s.source);
-    const custom = s.customTargets || {};
-    const detected = new Set(a.elements.map((e) => e.id));
-    for (const [id, b] of Object.entries(custom)) {
-      if (detected.has(id)) errs.push(`${k}: custom target ${id} conflicts with a detected element id`);
-      if (!b || typeof b.label !== "string" || b.label.trim().length < 3)
-        errs.push(`${k}: customTargets.${id} needs a "label" describing the control`);
+    if (!String(s.voiceover || "").trim()) errs.push(`${k}: voiceover missing`);
+    if (!Array.isArray(s.shots) || !s.shots.length) return errs.push(`${k}: shots missing`);
+    for (const sh of s.shots) {
+      const idx = Number(/^screen-(\d+)$/.exec(sh.source || "")?.[1]);
+      const a = analyses[idx - 1];
+      if (!a) { errs.push(`${k}: unknown source ${sh.source}`); continue; }
+      if (used.has(sh.source)) errs.push(`${k}: ${sh.source} used twice`);
+      used.add(sh.source);
+      const ids = new Set(a.elements.map((e) => e.id));
+      if (sh.label) {
+        if (typeof sh.target !== "string" || !sh.target || ids.has(sh.target))
+          errs.push(`${k}: custom target on ${sh.source} needs a NEW id`);
+        if (String(sh.label).trim().length < 3) errs.push(`${k}: label too short`);
+      } else if (!ids.has(sh.target)) errs.push(`${k}: unknown target ${sh.target} on ${sh.source}`);
     }
-    const known = new Set([...a.elements.map((e) => e.id), ...Object.keys(custom)]);
-    const c = s.camera || {};
-    if (!known.has(c.to)) errs.push(`${k}: camera.to unknown: ${c.to}`);
-    if (!(Number.isFinite(c.start) && Number.isFinite(c.end) && c.start >= 0 && c.start < c.end && c.end <= SCENE))
-      errs.push(`${k}: camera times invalid`);
-    if (!Array.isArray(s.actions) || !s.actions.length) return errs.push(`${k}: actions missing`);
-    for (const x of s.actions) {
-      if (!ALLOWED.includes(x.type)) errs.push(`${k}: bad action type ${x.type}`);
-      if (!known.has(x.target)) errs.push(`${k}: unknown target ${x.target}`);
-      const duration = x.duration ?? 0;
-      if (!Number.isFinite(x.at) || x.at < 0 || !Number.isFinite(duration) || duration < 0 || x.at + duration > SCENE)
-        errs.push(`${k}: bad timing on ${x.type}`);
-    }
-    const click = s.actions.find((x) => x.type === "click");
-    if (!click) errs.push(`${k}: needs a click`);
-    else if (c.to !== click.target) errs.push(`${k}: camera.to must equal the click target`);
-    const move = s.actions.find((x) => x.type === "cursor_move");
-    if (!move) errs.push(`${k}: needs a cursor_move`);
-    else if (click && click.at < move.at + (move.duration || 0))
-      errs.push(`${k}: click must happen after cursor_move ends`);
-    else if (click && move.target !== click.target)
-      errs.push(`${k}: cursor_move and click must use the same target`);
-    const highlight = s.actions.find((x) => x.type === "highlight");
-    if (highlight && click && highlight.target !== click.target)
-      errs.push(`${k}: highlight and click must use the same target`);
   });
   const missing = analyses.map((_, i) => `screen-${i + 1}`).filter((s) => !used.has(s));
   if (missing.length) errs.push(`every screen must be used exactly once; missing: ${missing.join(", ")}`);
@@ -223,34 +217,49 @@ async function direct({uploadDir, analyses}) {
 
   const assets = {}, targets = {};
   const scenes = [];
-  for (const [i, s] of result.scenes.entries()) {
-    const a = analyses[Number(s.source.split("-")[1]) - 1];
-    assets[a.filename] = {w: a.width, h: a.height};
-    const t = (targets[a.filename] = {});
-    for (const e of a.elements) t[e.id] = {x: e.x, y: e.y, w: e.w, h: e.h};
+  const text = (o) => ({
+    id: "", source: "", duration: SCENE, camera: {from: "full", to: "full", start: 0, end: 0},
+    actions: [], span: 1, ...o,
+  });
 
-    let to = s.camera.to;
-    const label = s.customTargets?.[to]?.label;
-    if (label) {
-      const box = await resolveBox(a, path.join(uploadDir, a.filename), label);
-      if (box) t[to] = box;
-      else {
-        const fb = a.elements.filter(usable)[0];
-        if (!fb) throw new Error(`Could not locate "${label}" on ${s.source}`);
-        console.warn(`Scene ${i + 1}: could not locate "${label}", using OCR target ${fb.id}`);
-        t[s.camera.to] = {x: fb.x, y: fb.y, w: fb.w, h: fb.h};
-        to = fb.id;
+  scenes.push(text({kind: "text", role: "problem", lines: result.problem.lines, voiceover: result.problem.voiceover}));
+  scenes.push(text({kind: "title", role: "title", title: result.product.name, tagline: result.product.tagline,
+    voiceover: result.product.voiceover}));
+
+  for (const g of result.scenes) {
+    for (const [si, sh] of g.shots.entries()) {
+      const a = analyses[Number(sh.source.split("-")[1]) - 1];
+      assets[a.filename] = {w: a.width, h: a.height};
+      const t = (targets[a.filename] = {});
+      for (const e of a.elements) t[e.id] = {x: e.x, y: e.y, w: e.w, h: e.h};
+      let to = sh.target;
+      if (sh.label) {
+        const box = await resolveBox(a, path.join(uploadDir, a.filename), sh.label);
+        if (box) t[to] = box;
+        else {
+          const fb = a.elements.filter(usable)[0];
+          if (!fb) throw new Error(`Could not locate "${sh.label}" on ${sh.source}`);
+          console.warn(`Could not locate "${sh.label}", using OCR target ${fb.id}`);
+          to = fb.id;
+        }
       }
+      scenes.push({
+        id: "", role: "solution", source: a.filename, duration: SCENE,
+        camera: {from: "full", to, start: 1, end: 2.5},
+        actions: [
+          {type: "highlight", target: to, at: 1.8, duration: 2},
+          {type: "cursor_move", target: to, at: 2.5, duration: 1},
+          {type: "click", target: to, at: 3.8},
+        ],
+        voiceover: si === 0 ? g.voiceover : "",
+        span: si === 0 ? g.shots.length : undefined,
+      });
     }
-    scenes.push({
-      id: `scene-${i + 1}`,
-      source: a.filename,
-      duration: SCENE,
-      camera: {from: "full", to, start: s.camera.start, end: s.camera.end},
-      actions: s.actions,
-      voiceover: s.voiceover || "",
-    });
   }
+
+  scenes.push(text({kind: "end", role: "cta", title: result.product.name, tagline: result.cta.headline,
+    url: result.cta.url || "", voiceover: result.cta.voiceover}));
+  scenes.forEach((s, i) => (s.id = `scene-${i + 1}`));
 
   return {
     video: {fps: 30, width: 1920, height: 1080, background: result.background},

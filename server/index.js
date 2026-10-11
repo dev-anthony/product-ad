@@ -166,7 +166,10 @@ const recipe = await direct({uploadDir, analyses});
 const id = `project-${Date.now()}`;
 
 let voiceError = "";
-for (const [i, s] of recipe.scenes.entries()) {
+const sc = recipe.scenes;
+for (let i = 0; i < sc.length; ) {
+  const s = sc[i];
+  const span = s.span || 1;
   let secs = 0;
   if (s.voiceover) {
     const name = `${id}-scene-${i + 1}.mp3`;
@@ -175,14 +178,18 @@ for (const [i, s] of recipe.scenes.entries()) {
       secs = v.secs;
       s.audio = name;
       s.audioSecs = v.secs;
-      s.audioStart = v.lead;
+      s.audioStart = 0;
     } catch (e) {
-      secs = 0;
       voiceError = String(e.message || e);
       console.error("TTS failed:", e);
     }
+    await new Promise((r) => setTimeout(r, 400)); // be gentle with Edge TTS
   }
-  retime(s, secs, i === recipe.scenes.length - 1, recipe.video.fps);
+  const hold = s.kind === "end" ? 1.5 : 0;
+  const share = secs > 0 ? Math.max(secs / span, 2.2) + hold : hold ? 3 : 0;
+  for (let j = i; j < Math.min(i + span, sc.length); j++)
+    retime(sc[j], share, j === sc.length - 1, recipe.video.fps);
+  i += span;
 }
 
 fs.writeFileSync(path.join(uploadDir, `${id}.recipe.json`), JSON.stringify(recipe, null, 2));

@@ -12,6 +12,7 @@ function retime(scene, audioSecs, isLast, fps = 30) {
   const activeDuration = activeFrames / fps;
   const cameraEnd = Math.min(1.45, activeDuration * 0.5);
   scene.duration = durationFrames / fps;
+  if (scene.kind && scene.kind !== "shots") return scene;
   scene.camera = {from: "full", to: target, start: Math.min(0.35, cameraEnd * 0.2), end: cameraEnd};
   scene.actions = [
     {type: "highlight", target, at: activeDuration * 0.2, duration: activeDuration * 0.42},

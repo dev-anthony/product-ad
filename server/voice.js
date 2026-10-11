@@ -43,31 +43,27 @@ function speechSpan(subPath, fileSecs) {
   }
 }
 
-// Returns {lead, secs}: seconds of silence to skip at the start, and the length of the speech itself.
+// Returns {lead, secs}. Audio plays from 0 (no lead trimming); only trailing silence is cut.
 async function makeVoice(text, voice, outPath) {
   const lang = voice.split("-").slice(0, 2).join("-");
-  const tts = new EdgeTTS({voice, lang, outputFormat: FORMAT, saveSubtitles: true});
   const subPath = `${outPath}.json`;
   let lastErr;
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 3; i++) {
     try {
-      fs.rmSync(outPath, {force: true}); // never retry on top of a partial file
+      if (i) await new Promise((r) => setTimeout(r, 1500 * i));
+      const tts = new EdgeTTS({voice, lang, outputFormat: FORMAT, saveSubtitles: true});
+      fs.rmSync(outPath, {force: true});
       fs.rmSync(subPath, {force: true});
       await tts.ttsPromise(text, outPath);
       const buf = fs.readFileSync(outPath);
+      if (buf.length < 2000) throw new Error("TTS returned an empty/short file");
       const fileSecs = mp3Seconds(buf) || buf.length / (48000 / 8);
       const span = speechSpan(subPath, fileSecs);
-      console.log(
-        `[voice] ${outPath.split(/[\\/]/).pop()}: file ${fileSecs.toFixed(2)}s, speech ${
-          span ? span.first.toFixed(2) + "-" + span.last.toFixed(2) : "unknown"
-        }s, ${text.split(/\s+/).length} words`,
-      );
-      if (!span) return {lead: 0, secs: fileSecs};
-      const lead = Math.max(0, span.first - 0.05); // skip the silence before the first word
-      const end = Math.min(fileSecs, span.last + 0.08); // tiny natural breath after the last word
-      return {lead, secs: end - lead};
+      console.log(`[voice] ${outPath.split(/[\\/]/).pop()}: file ${fileSecs.toFixed(2)}s, speech ends ${span ? span.last.toFixed(2) : "unknown"}s`);
+      return {lead: 0, secs: span ? Math.min(fileSecs, span.last + 0.1) : fileSecs};
     } catch (e) {
       lastErr = e;
+      console.warn(`[voice] attempt ${i + 1} failed: ${e.message}`);
     }
   }
   throw lastErr;
