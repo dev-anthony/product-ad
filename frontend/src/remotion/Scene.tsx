@@ -30,7 +30,7 @@ const center = (r: Recipe, s: Scene, id: string) => {
 // Keep the camera inside the screenshot so no empty background shows at the edges.
 const keepInside = (c: number, half: number) => (half >= 0.5 ? 0.5 : Math.min(1 - half, Math.max(half, c)));
 
-export const SceneView: React.FC<{
+const ShotScene: React.FC<{
   recipe: Recipe;
   scene: Scene;
   isFirst?: boolean;
@@ -91,7 +91,7 @@ export const SceneView: React.FC<{
   const py = (n: number) => top + n * dh;
 
   return (
-    <AbsoluteFill style={{opacity, transform: `scale(${push})`}}>
+    <AbsoluteFill style={{opacity, transform: `perspective(2000px) rotateX(${isFirst ? 0 : 6 * (1 - inP)}deg) scale(${push})`}}>
       <AbsoluteFill
         style={{
           transformOrigin: "0 0",
@@ -151,3 +151,67 @@ export const SceneView: React.FC<{
     </AbsoluteFill>
   );
 };
+const TextScene: React.FC<{scene: Scene; isFirst: boolean; isLast: boolean}> = ({scene, isFirst, isLast}) => {
+  const frame = useCurrentFrame();
+  const {fps, width: W} = useVideoConfig();
+  const t = frame / fps;
+  const u = W / 1920;
+  const inP = interpolate(t, [0, isFirst ? 0.4 : OVERLAP], [0, 1], {easing: easeOut, ...clamp});
+  const outP = isLast ? 0 : interpolate(t, [scene.duration - OVERLAP, scene.duration], [0, 1], {easing: ease, ...clamp});
+  const font = "Inter, system-ui, Segoe UI, sans-serif";
+  const rise = (at: number) => ({
+    opacity: interpolate(t, [at, at + 0.5], [0, 1], {easing: easeOut, ...clamp}),
+    transform: `translateY(${interpolate(t, [at, at + 0.5], [40, 0], {easing: easeOut, ...clamp}) * u}px)`,
+  });
+  const box: React.CSSProperties = {
+    opacity: inP * (1 - outP), justifyContent: "center", alignItems: "center", padding: 120 * u,
+  };
+
+  if (scene.kind === "title" || scene.kind === "end") {
+    const end = scene.kind === "end";
+    return (
+      <AbsoluteFill style={box}>
+        <div style={{display: "flex", flexDirection: "column", alignItems: "center", gap: 28 * u, fontFamily: font}}>
+          <div style={{...rise(0.2), fontSize: 150 * u, fontWeight: 700, color: "#fff", letterSpacing: -2 * u}}>
+            {scene.title}
+          </div>
+          {scene.tagline && (
+            <div style={{...rise(0.7), fontSize: (end ? 64 : 52) * u, fontWeight: end ? 700 : 500,
+              color: end ? "#fff" : "rgba(255,255,255,0.75)", textAlign: "center"}}>
+              {scene.tagline}
+            </div>
+          )}
+          {end && scene.url && (
+            <div style={{...rise(1.2), marginTop: 20 * u, padding: `${16 * u}px ${40 * u}px`, borderRadius: 999,
+              background: "#2563eb", color: "#fff", fontSize: 44 * u, fontWeight: 600}}>
+              {scene.url}
+            </div>
+          )}
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  const lines = scene.lines ?? [];
+  return (
+    <AbsoluteFill style={box}>
+      <div style={{display: "flex", flexDirection: "column", gap: 28 * u, alignItems: "center"}}>
+        {lines.map((l, i) => {
+          const last = i === lines.length - 1;
+          return (
+            <div key={i} style={{
+              ...rise(0.3 + i * 0.9),
+              fontSize: (last ? 110 : 84) * u, fontWeight: 700, lineHeight: 1.1, textAlign: "center",
+              color: last ? "#f87171" : "#fff", fontFamily: font,
+            }}>{l}</div>
+          );
+        })}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export const SceneView: React.FC<{recipe: Recipe; scene: Scene; isFirst?: boolean; isLast?: boolean}> = (p) =>
+  p.scene.kind && p.scene.kind !== "shots"
+    ? <TextScene scene={p.scene} isFirst={!!p.isFirst} isLast={!!p.isLast} />
+    : <ShotScene {...p} />;

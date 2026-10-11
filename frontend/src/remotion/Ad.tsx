@@ -55,7 +55,7 @@ export const Ad: React.FC<{recipe: Recipe}> = ({recipe}) => {
           if (!w || !scene.audio) return null;
           return (
             <Sequence key={`v-${scene.id}`} from={w.from} durationInFrames={w.len} layout="none">
-              <Audio src={`${recipe.baseUrl}/${scene.audio}`} trimBefore={Math.round((scene.audioStart ?? 0) * fps)} />
+              <Audio src={`${recipe.baseUrl}/${scene.audio}`} />
             </Sequence>
           );
         })}

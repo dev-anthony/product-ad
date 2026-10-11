@@ -9,6 +9,13 @@ export type Action = {
 
 export type Scene = {
   id: string;
+  kind?: "shots" | "text" | "title" | "end";
+  role?: string;
+  lines?: string[]; // text scenes
+  title?: string; // title/end cards: product name
+  tagline?: string; // title card: tagline, end card: headline
+  url?: string; // end card
+  span?: number; // how many scenes this narration covers
   source: string;
   duration: number;
   camera: {from: string; to: string; start: number; end: number};
@@ -45,6 +52,8 @@ export type Recipe = {
 
 export const OVERLAP = 0.5; // seconds neighbouring scenes overlap
 
+export const isShot = (s: Scene) => !s.kind || s.kind === "shots";
+
 // ONE source of truth for the timeline. Ad.tsx, Root.tsx and the editor all use it.
 export const sceneLayout = (scenes: Scene[], fps: number) => {
   const ov = Math.round(OVERLAP * fps);
@@ -66,7 +75,8 @@ export const voiceWindows = (scenes: Scene[], fps: number) => {
     if (!s.audio) return null;
     const from = starts[i];
     const secs = s.audioSecs ?? s.duration;
-    let end = Math.min(from + Math.ceil(secs * fps), froms[i] + full[i], total);
+    const last = Math.min(i + (s.span ?? 1) - 1, scenes.length - 1);
+    let end = Math.min(from + Math.ceil(secs * fps), froms[last] + full[last], total);
     const next = starts.find((st, k) => k > i && st >= 0);
     if (next !== undefined) end = Math.min(end, next);
     return end - from >= 1 ? {from, len: end - from} : null;
