@@ -48,9 +48,9 @@ async function makeVoice(text, voice, outPath) {
   const lang = voice.split("-").slice(0, 2).join("-");
   const subPath = `${outPath}.json`;
   let lastErr;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 6; i++) {
     try {
-      if (i) await new Promise((r) => setTimeout(r, 1500 * i));
+      if (i) await new Promise((r) => setTimeout(r, 2000 * i + Math.random() * 500));
       const tts = new EdgeTTS({voice, lang, outputFormat: FORMAT, saveSubtitles: true});
       fs.rmSync(outPath, {force: true});
       fs.rmSync(subPath, {force: true});

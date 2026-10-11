@@ -183,7 +183,7 @@ for (let i = 0; i < sc.length; ) {
       voiceError = String(e.message || e);
       console.error("TTS failed:", e);
     }
-    await new Promise((r) => setTimeout(r, 400)); // be gentle with Edge TTS
+    await new Promise((r) => setTimeout(r, 1200)); // be gentle with Edge TTS
   }
   const hold = s.kind === "end" ? 1.5 : 0;
   const share = secs > 0 ? Math.max(secs / span, 2.2) + hold : hold ? 3 : 0;
