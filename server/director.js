@@ -46,8 +46,7 @@ Return exactly this JSON:
   },
   "scenes": [
     {
-      "voiceover": "<2-3 short punchy sentences walking through ALL shots, max 12 words each>",
-      "shots": [{"source": "screen-1", "target": "<id>", "label": "<only for a custom target>"}]
+      "shots": [{"source": "screen-1", "target": "<id>", "label": "<only for a custom target>", "voiceover": "<ONE short punchy sentence about what THIS shot shows, 6-10 words>"}]
     }
   ],
   "cta": {
@@ -59,7 +58,7 @@ Return exactly this JSON:
 
 Rules:
 - "scenes" has 1 to 3 scenes showing how the product solves the problem, one feature theme each. Group similar or related screens into the same scene. Every screen appears in exactly one shot, exactly once. Never skip a screen.
-- Within a scene, shots play in order and the voiceover walks through them.
+- Within a scene, shots play in order. EVERY shot has its own voiceover line (6-10 words) describing what is on that screen; the lines across all shots must flow as one continuous story.
 - Each shot's target: prefer an actionable control or key feature label. Never headings, browser chrome or decoration. Prefer a detected OCR id. If the control is a button/icon OCR cannot see, give a NEW id as target plus a short "label" describing it (no coordinates).
 - Voiceover style: short, confident, plain spoken English. Fragments are fine ("No account." "Punch in."). No emojis, no repeated phrases. All voiceovers together read as one continuous ad.
 - background: two hex colors from the first screen's dominant palette.`;
@@ -89,7 +88,6 @@ const validate = (r, analyses) => {
   const used = new Set();
   r.scenes.forEach((s, i) => {
     const k = `scene ${i + 1}`;
-    if (!String(s.voiceover || "").trim()) errs.push(`${k}: voiceover missing`);
     if (!Array.isArray(s.shots) || !s.shots.length) return errs.push(`${k}: shots missing`);
     for (const sh of s.shots) {
       const idx = Number(/^screen-(\d+)$/.exec(sh.source || "")?.[1]);
@@ -97,6 +95,7 @@ const validate = (r, analyses) => {
       if (!a) { errs.push(`${k}: unknown source ${sh.source}`); continue; }
       if (used.has(sh.source)) errs.push(`${k}: ${sh.source} used twice`);
       used.add(sh.source);
+      if (!String(sh.voiceover || "").trim()) errs.push(`${k}: ${sh.source} needs its own voiceover`);
       const ids = new Set(a.elements.map((e) => e.id));
       if (sh.label) {
         if (typeof sh.target !== "string" || !sh.target || ids.has(sh.target))
@@ -251,8 +250,7 @@ async function direct({uploadDir, analyses}) {
           {type: "cursor_move", target: to, at: 2.5, duration: 1},
           {type: "click", target: to, at: 3.8},
         ],
-        voiceover: si === 0 ? g.voiceover : "",
-        span: si === 0 ? g.shots.length : undefined,
+        voiceover: sh.voiceover,
       });
     }
   }

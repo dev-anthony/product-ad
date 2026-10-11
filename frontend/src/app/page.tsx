@@ -164,27 +164,31 @@ function Wave({peaks, w}: {peaks?: number[]; w: number}) {
 }
 
 function Meter({active}: {active: boolean}) {
-  const [lv, setLv] = useState([0, 0]);
+  const bars = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
+    // update the DOM directly: no React state, so no re-render loop
+    const set = (a: number, b: number) =>
+      [a, b].forEach((v, c) => {
+        const el = bars.current[c];
+        if (el) el.style.clipPath = `inset(${(1 - v) * 100}% 0 0 0)`;
+      });
+
     if (!active) {
-      setLv([0, 0]);
+      set(0, 0);
       return;
     }
 
     const t = setInterval(() => {
       const b = 0.4 + 0.25 * Math.sin(Date.now() / 260);
-
-      setLv([
+      set(
         Math.min(1, b + Math.random() * 0.3),
         Math.min(1, b + Math.random() * 0.3),
-      ]);
+      );
     }, 90);
 
     return () => clearInterval(t);
   }, [active]);
-
-  const N = 30;
 
   return (
     <div className="flex w-16 shrink-0 gap-1 border-l border-[#232327] bg-[#0f0f11] px-2 py-2.5 pl-1.5">
@@ -194,26 +198,23 @@ function Meter({active}: {active: boolean}) {
         ))}
       </div>
 
-      {lv.map((v, c) => (
-        <div key={c} className="flex w-[7px] flex-col gap-px">
-          {Array.from({length: N}).map((_, i) => {
-            const pos = 1 - i / N;
-            const cls =
-              pos > 0.82
-                ? "bg-[#ef4444]"
-                : pos > 0.6
-                  ? "bg-[#e8d23a]"
-                  : "bg-[#46d36a]";
-
-            return (
-              <i
-                key={i}
-                className={`min-h-0 flex-1 rounded-[1px] ${
-                  pos <= v ? cls : "bg-[#222226]"
-                }`}
-              />
-            );
-          })}
+      {[0, 1].map((c) => (
+        <div key={c} className="relative w-[7px] rounded-[1px] bg-[#222226]">
+          <div
+            ref={(el) => {
+              bars.current[c] = el;
+            }}
+            className="absolute inset-0 rounded-[1px]"
+            style={{
+              clipPath: "inset(100% 0 0 0)",
+              background:
+                "linear-gradient(to top, #46d36a 0 60%, #e8d23a 60% 82%, #ef4444 82% 100%)",
+              maskImage:
+                "repeating-linear-gradient(to bottom, #000 0 4px, transparent 4px 6px)",
+              WebkitMaskImage:
+                "repeating-linear-gradient(to bottom, #000 0 4px, transparent 4px 6px)",
+            }}
+          />
         </div>
       ))}
     </div>
