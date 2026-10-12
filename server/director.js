@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
-const DEFAULT_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash-lite"];
+const DEFAULT_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"];
 const fromEnv = (process.env.GEMINI_MODELS || process.env.GEMINI_MODEL || "")
   .split(",").map((s) => s.trim()).filter(Boolean);
 // .env models are tried first, then the defaults as fallbacks (duplicates removed)
@@ -122,6 +122,7 @@ async function generate(contents, system = SYSTEM, extra = {}) {
       } catch (e) {
         lastErr = e;
         const status = e.status ?? e.code;
+        if (status === 404) break; // this model no longer exists: go to the next one
         if (!RETRYABLE.has(status)) throw e; // bad key, bad request etc: don't retry
         const wait = Math.min(15000, 1000 * 2 ** i) + Math.random() * 500;
         console.warn(`${model} returned ${status}, retry ${i + 1}/3 in ${Math.round(wait)}ms`);

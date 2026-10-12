@@ -51,6 +51,7 @@ type MediaItem = {
   file: File;
   url: string;
   server?: string;
+  analyzed?: boolean;
 };
 
 type Hist = {
@@ -351,9 +352,15 @@ export default function Home() {
     const p = player.current;
     if (!p) return;
 
-    const onFrame = (e: {detail: {frame: number}}) => setFrame(e.detail.frame);
+    // while playing, update the UI at 1/3 of the frame rate so the preview stays smooth
+    const onFrame = (e: {detail: {frame: number}}) => {
+      if (!p.isPlaying() || e.detail.frame % 3 === 0) setFrame(e.detail.frame);
+    };
     const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
+    const onPause = () => {
+      setPlaying(false);
+      setFrame(p.getCurrentFrame());
+    };
 
     p.addEventListener("frameupdate", onFrame);
     p.addEventListener("play", onPlay);
@@ -552,32 +559,48 @@ export default function Home() {
     setFrame(0);
     setMarkers([]);
 
+    let analyzedAll = false;
+
     try {
       const names: string[] = [];
-      const uploadedById: Record<string, string> = {};
       const failures: string[] = [];
 
       for (let i = 0; i < media.length; i++) {
         const item = media[i];
+
+        // already uploaded + analyzed in an earlier attempt: skip, never redo it
+        if (item.server && item.analyzed) {
+          names.push(item.server);
+          continue;
+        }
+
         setStatus(`Uploading and analyzing ${i + 1}/${media.length}: ${item.file.name}`);
         try {
-          const form = new FormData();
-          form.append("screenshot", item.file);
-          const up = await post<{filename: string}>("/api/upload", form, false);
-          uploadedById[item.id] = up.filename;
-          await post("/api/analyze", JSON.stringify({filename: up.filename}));
-          names.push(up.filename);
+          let server = item.server;
+
+          if (!server) {
+            const form = new FormData();
+            form.append("screenshot", item.file);
+            const up = await post<{filename: string}>("/api/upload", form, false);
+            server = up.filename;
+            setMedia((m) => m.map((x) => (x.id === item.id ? {...x, server} : x)));
+          }
+
+          await post("/api/analyze", JSON.stringify({filename: server}));
+          setMedia((m) => m.map((x) => (x.id === item.id ? {...x, analyzed: true} : x)));
+          names.push(server);
         } catch (e) {
           failures.push(`${item.file.name}: ${e instanceof Error ? e.message : String(e)}`);
         }
       }
 
-      setMedia((m) => m.map((x) => ({...x, server: uploadedById[x.id] || x.server})));
       if (failures.length) {
         throw new Error(
-          `Analyzed ${names.length} of ${media.length} screenshots; generation stopped so none are silently omitted. ${failures.join("; ")}`,
+          `Analyzed ${names.length} of ${media.length} screenshots; generation stopped so none are silently omitted. Press Generate again to continue where it stopped. ${failures.join("; ")}`,
         );
       }
+
+      analyzedAll = true;
 
       setStatus("Directing with Gemini and recording voiceover...");
 
@@ -595,7 +618,10 @@ export default function Home() {
           : `Ready: ${rc.recipe.scenes.length} scenes`,
       );
     } catch (e: any) {
-      setStatus(e.message || "Could not reach the server on port 4000.");
+      setStatus(
+        (e.message || "Could not reach the server on port 4000.") +
+          (analyzedAll ? " Your screenshots are already analyzed: press Generate to retry from this step." : ""),
+      );
     } finally {
       setBusy(false);
     }

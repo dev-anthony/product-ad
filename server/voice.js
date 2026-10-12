@@ -3,6 +3,25 @@ const fs = require("fs");
 
 const FORMAT = "audio-24khz-48kbitrate-mono-mp3";
 
+// Microsoft rejects the request (403) when this PC's clock is off by even a minute or two.
+// Read the server's clock and shift Date.now() to match (only when the gap is noticeable).
+const realNow = Date.now.bind(Date);
+let skew = 0;
+Date.now = () => realNow() + skew;
+async function syncClock() {
+  try {
+    const r = await fetch("https://speech.platform.bing.com/", {method: "HEAD", signal: AbortSignal.timeout(5000)});
+    const d = Date.parse(r.headers.get("date"));
+    if (Number.isFinite(d)) {
+      const off = d - realNow();
+      skew = Math.abs(off) > 2000 ? off : 0;
+      console.log(`[voice] PC clock is ${(-off / 1000).toFixed(1)}s ${off > 0 ? "behind" : "ahead of"} Microsoft${skew ? " (corrected)" : ""}`);
+    }
+  } catch (e) {
+    console.warn("[voice] clock check failed:", e.message);
+  }
+}
+
 // Exact duration of an MP3 by walking its frames (no size/bitrate guessing).
 // Returns 0 if the file cannot be parsed.
 function mp3Seconds(buf) {
@@ -48,6 +67,7 @@ async function makeVoice(text, voice, outPath) {
   const lang = voice.split("-").slice(0, 2).join("-");
   const subPath = `${outPath}.json`;
   let lastErr;
+  if (!makeVoice.synced) { makeVoice.synced = true; await syncClock(); }
   for (let i = 0; i < 6; i++) {
     try {
       if (i) await new Promise((r) => setTimeout(r, 2000 * i + Math.random() * 500));
@@ -64,6 +84,7 @@ async function makeVoice(text, voice, outPath) {
     } catch (e) {
       lastErr = e;
       console.warn(`[voice] attempt ${i + 1} failed: ${e.message}`);
+      if (/403/.test(e.message)) await syncClock();
     }
   }
   throw lastErr;

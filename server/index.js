@@ -29,7 +29,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit: "50mb"})); // the recipe holds every OCR box, it is far bigger than the 100kb default
 
 const uploadDir = path.join(__dirname, "public");
 fs.mkdirSync(uploadDir, {recursive: true});
@@ -167,30 +167,39 @@ const id = `project-${Date.now()}`;
 
 let voiceError = "";
 const sc = recipe.scenes;
-for (let i = 0; i < sc.length; ) {
-  const s = sc[i];
-  const span = s.span || 1;
-  let secs = 0;
-  if (s.voiceover) {
-    const name = `${id}-scene-${i + 1}.mp3`;
-    try {
-      const v = await makeVoice(s.voiceover, voice, path.join(uploadDir, name));
-      secs = v.secs;
-      s.audio = name;
-      s.audioSecs = v.secs;
-      s.audioStart = 0;
-    } catch (e) {
-      voiceError = String(e.message || e);
-      console.error("TTS failed:", e);
-    }
-    await new Promise((r) => setTimeout(r, 1200)); // be gentle with Edge TTS
+const secsOf = sc.map(() => 0);
+const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+const gen = async (i) => {
+  const name = `${id}-scene-${i + 1}.mp3`;
+  try {
+    const v = await makeVoice(sc[i].voiceover, voice, path.join(uploadDir, name));
+    secsOf[i] = v.secs;
+    sc[i].audio = name;
+    sc[i].audioSecs = v.secs;
+    sc[i].audioStart = 0;
+    return true;
+  } catch (e) {
+    voiceError = String(e.message || e);
+    console.error("TTS failed for scene", i + 1, "-", voiceError);
+    return false;
   }
-  const hold = s.kind === "end" ? 1.5 : 0;
-  const share = secs > 0 ? Math.max(secs / span, 2.2) + hold : hold ? 3 : 0;
-  for (let j = i; j < Math.min(i + span, sc.length); j++)
-    retime(sc[j], share, j === sc.length - 1, recipe.video.fps);
-  i += span;
+};
+const failed = [];
+for (let i = 0; i < sc.length; i++) {
+  if (!sc[i].voiceover) continue;
+  if (!(await gen(i))) failed.push(i);
+  await pause(1200); // be gentle with Edge TTS
 }
+for (const i of failed) { // second chance for the scenes that failed, after a pause
+  await pause(6000);
+  await gen(i);
+}
+if (!sc.some((s) => s.voiceover && !s.audio)) voiceError = "";
+sc.forEach((s, j) => {
+  const hold = s.kind === "end" ? 1.5 : 0;
+  const share = secsOf[j] > 0 ? Math.max(secsOf[j], 2.2) + hold : hold ? 3 : 0;
+  retime(s, share, j === sc.length - 1, recipe.video.fps);
+});
 
 fs.writeFileSync(path.join(uploadDir, `${id}.recipe.json`), JSON.stringify(recipe, null, 2));
 res.json({id, recipe, voiceError});

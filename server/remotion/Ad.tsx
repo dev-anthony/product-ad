@@ -55,7 +55,7 @@ export const Ad: React.FC<{recipe: Recipe}> = ({recipe}) => {
           if (!w || !scene.audio) return null;
           return (
             <Sequence key={`v-${scene.id}`} from={w.from} durationInFrames={w.len} layout="none">
-              <Audio src={`${recipe.baseUrl}/${scene.audio}`} />
+              <Audio src={`${recipe.baseUrl}/${scene.audio}`} acceptableTimeShiftInSeconds={2} />
             </Sequence>
           );
         })}
@@ -79,6 +79,7 @@ export const Ad: React.FC<{recipe: Recipe}> = ({recipe}) => {
           return (
             <Sequence key={m.id} from={from} durationInFrames={len} layout="none">
               <Audio
+                acceptableTimeShiftInSeconds={2}
                 src={`${recipe.baseUrl}/${m.src}`}
                 volume={(f) => m.volume * interpolate(f, [len - 30, len], [1, 0], clamp)}
               />
