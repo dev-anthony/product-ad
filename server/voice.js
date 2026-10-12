@@ -4,9 +4,9 @@ const fs = require("fs");
 
 const FORMAT = "audio-24khz-48kbitrate-mono-mp3";
 
-// TTS_PROVIDER in .env: "auto" (default: Microsoft voice first, Gemini voice as backup),
-// "edge" (Microsoft only) or "gemini" (Gemini only: one consistent voice for the whole ad).
-const MODE = (process.env.TTS_PROVIDER || "auto").toLowerCase();
+// TTS_PROVIDER in .env: "gemini" (default: one consistent voice), "edge" (Microsoft only)
+// or "auto" (Microsoft first, Gemini as backup).
+const MODE = (process.env.TTS_PROVIDER || "gemini").toLowerCase();
 const GEMINI_TTS_MODELS = (process.env.GEMINI_TTS_MODELS || "gemini-3.8-flash-lite-tts,gemini-3.8-flash-tts")
   .split(",").map((s) => s.trim()).filter(Boolean);
 const GEMINI_FEMALE = process.env.GEMINI_VOICE_FEMALE || "Kore";
@@ -69,6 +69,46 @@ function wavSecs(buf) {
   return buf.length / 48000;
 }
 
+// Cut the silence Gemini puts before and after the speech, so scenes have no dead air.
+function trimWav(buf) {
+  try {
+    if (buf.length < 44 || buf.toString("latin1", 0, 4) !== "RIFF") return buf;
+    let pos = 12, fmt = null, data = null;
+    while (pos + 8 <= buf.length) {
+      const id = buf.toString("latin1", pos, pos + 4);
+      let size = buf.readUInt32LE(pos + 4);
+      if (id === "fmt ") fmt = {tag: buf.readUInt16LE(pos + 8), ch: buf.readUInt16LE(pos + 10), rate: buf.readUInt32LE(pos + 12), bits: buf.readUInt16LE(pos + 22)};
+      if (id === "data") { size = Math.min(size, buf.length - pos - 8); data = {start: pos + 8, size}; break; }
+      pos += 8 + size + (size & 1);
+    }
+    if (!fmt || !data || fmt.bits !== 16 || fmt.tag !== 1) return buf;
+    const frame = 2 * fmt.ch, n = Math.floor(data.size / frame);
+    const win = Math.max(1, Math.round(fmt.rate * 0.01)); // 10 ms windows
+    const thr = 0.012 * 32768;
+    const nWin = Math.ceil(n / win);
+    const loud = (w) => {
+      for (let i = w * win; i < Math.min(n, (w + 1) * win); i++)
+        if (Math.abs(buf.readInt16LE(data.start + i * frame)) > thr) return true;
+      return false;
+    };
+    let fw = 0, lw = nWin - 1;
+    while (fw < nWin && !loud(fw)) fw++;
+    if (fw >= nWin) return buf; // no speech found: leave it alone
+    while (lw > fw && !loud(lw)) lw--;
+    const a = Math.max(0, fw * win - Math.round(fmt.rate * 0.06));
+    const b = Math.min(n, (lw + 1) * win + Math.round(fmt.rate * 0.12));
+    const pcm = buf.subarray(data.start + a * frame, data.start + b * frame);
+    const h = Buffer.alloc(44);
+    h.write("RIFF", 0); h.writeUInt32LE(36 + pcm.length, 4); h.write("WAVE", 8);
+    h.write("fmt ", 12); h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(fmt.ch, 22);
+    h.writeUInt32LE(fmt.rate, 24); h.writeUInt32LE(fmt.rate * frame, 28); h.writeUInt16LE(frame, 32); h.writeUInt16LE(16, 34);
+    h.write("data", 36); h.writeUInt32LE(pcm.length, 40);
+    return Buffer.concat([h, pcm]);
+  } catch {
+    return buf;
+  }
+}
+
 // Microsoft Edge voice. Writes <base>.mp3
 async function edgeVoice(text, voice, base, tries) {
   const out = `${base}.mp3`, subPath = `${out}.json`;
@@ -115,10 +155,11 @@ async function geminiVoice(text, voice, base) {
         if (!b64) throw new Error("Gemini TTS returned no audio");
         const buf = Buffer.from(b64, "base64");
         if (buf.length < 2000) throw new Error("Gemini TTS returned a very short file");
-        fs.writeFileSync(out, buf);
-        const secs = wavSecs(buf);
+        const clean = trimWav(buf);
+        fs.writeFileSync(out, clean);
+        const secs = wavSecs(clean);
         console.log(`[voice] gemini(${model}, ${name}) ${out.split(/[\\/]/).pop()}: ${secs.toFixed(2)}s`);
-        return {file: out, lead: 0, secs: secs + 0.05};
+        return {file: out, lead: 0, secs};
       } catch (e) {
         lastErr = e;
         const st = e.status ?? e.code;
@@ -156,4 +197,4 @@ async function makeVoice(text, voice, base) {
   throw lastErr;
 }
 
-module.exports = {makeVoice, mp3Seconds, wavSecs};
+module.exports = {makeVoice, mp3Seconds, wavSecs, trimWav};

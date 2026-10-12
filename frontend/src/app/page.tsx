@@ -627,16 +627,16 @@ export default function Home() {
     }
   };
 
-  const exportVideo = async () => {
+  const exportVideo = async (full = false) => {
     if (!recipe || busy) return;
 
     setBusy(true);
-    setStatus("Exporting (can take a few minutes)...");
+    setStatus(full ? "Exporting 1080p (can take several minutes)..." : "Exporting 720p (a few minutes)...");
 
     try {
       const d = await post<{video: string}>(
         "/api/render",
-        JSON.stringify({id: projectId, recipe: {...recipe, music}}),
+        JSON.stringify({id: projectId, recipe: {...recipe, music}, quality: full ? "full" : "fast"}),
       );
 
       const blob = await (await fetch(d.video)).blob();
@@ -1009,7 +1009,8 @@ export default function Home() {
       "File",
       [
         {label: "New project", run: resetProject},
-        {label: "Export video", run: exportVideo, disabled: !has || busy},
+        {label: "Export video (720p, faster)", run: () => exportVideo(false), disabled: !has || busy},
+        {label: "Export video (1080p, slower)", run: () => exportVideo(true), disabled: !has || busy},
       ],
     ],
     [
@@ -1199,7 +1200,7 @@ export default function Home() {
             <button
               className="inline-flex items-center gap-2 rounded-full bg-[#f5c518] px-4 py-2 font-bold text-[#111] disabled:cursor-default disabled:opacity-[.38]"
               disabled={!has || busy}
-              onClick={exportVideo}
+              onClick={() => exportVideo(false)}
             >
               <Icon n="cloudUp" size={16} />
               Export

@@ -3,6 +3,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const crypto = require("crypto");
 const sizeOf = require("image-size");
 const {createWorker} = require("tesseract.js");
@@ -217,15 +218,26 @@ app.post("/api/render", async (req, res) => {
     const savedRecipe = JSON.parse(fs.readFileSync(recipePath, "utf8"));
     const recipe = {...(req.body.recipe || savedRecipe), baseUrl: "http://localhost:4000/files"};
     const serveUrl = await getServeUrl();
-    const composition = await selectComposition({
+    const base = await selectComposition({
       serveUrl, id: "Ad", inputProps: {recipe}, browserExecutable: CHROME,
     });
+    // "fast" renders 1280x720 (about 2.3x fewer pixels than 1080p), "full" keeps 1920x1080
+    const full = req.body.quality === "full";
+    const composition = full ? base : {...base, width: 1280, height: 720};
     const outName = `${id}.mp4`;
+    let lastPct = -10;
+    console.log(`[render] start ${composition.width}x${composition.height}, ${composition.durationInFrames} frames`);
     await renderMedia({
-      composition, serveUrl, codec: "h264",
+      composition, serveUrl, codec: "h264", x264Preset: "veryfast",
+      concurrency: Math.max(2, Math.min(4, os.cpus().length - 1)),
+      onProgress: ({progress}) => {
+        const pct = Math.floor(progress * 100);
+        if (pct >= lastPct + 10) { lastPct = pct; console.log(`[render] ${pct}%`); }
+      },
       outputLocation: path.join(outDir, outName),
       inputProps: {recipe}, browserExecutable: CHROME,
     });
+    console.log("[render] done");
     res.json({video: `http://localhost:4000/out/${outName}`});
   } catch (err) {
     console.error(err);
@@ -265,4 +277,10 @@ const getServeUrl = () => {
 
 
 
-app.listen(4000, () => console.log("Server on http://localhost:4000"));
+app.listen(4000, () => {
+  console.log("Server on http://localhost:4000");
+  // bundle the video code now, in the background, so the first export does not wait for it
+  getServeUrl()
+    .then(() => console.log("[render] ready to export"))
+    .catch((e) => console.warn("[render] pre-bundle failed:", e.message));
+});
