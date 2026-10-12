@@ -170,11 +170,11 @@ const sc = recipe.scenes;
 const secsOf = sc.map(() => 0);
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 const gen = async (i) => {
-  const name = `${id}-scene-${i + 1}.mp3`;
   try {
-    const v = await makeVoice(sc[i].voiceover, voice, path.join(uploadDir, name));
+    const base = path.join(uploadDir, `${id}-scene-${i + 1}`);
+    const v = await makeVoice(sc[i].voiceover, voice, base);
     secsOf[i] = v.secs;
-    sc[i].audio = name;
+    sc[i].audio = path.basename(v.file);
     sc[i].audioSecs = v.secs;
     sc[i].audioStart = 0;
     return true;

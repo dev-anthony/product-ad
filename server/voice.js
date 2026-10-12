@@ -1,26 +1,20 @@
 const {EdgeTTS} = require("node-edge-tts");
+const {GoogleGenAI} = require("@google/genai");
 const fs = require("fs");
 
 const FORMAT = "audio-24khz-48kbitrate-mono-mp3";
 
-// Microsoft rejects the request (403) when this PC's clock is off by even a minute or two.
-// Read the server's clock and shift Date.now() to match (only when the gap is noticeable).
-const realNow = Date.now.bind(Date);
-let skew = 0;
-Date.now = () => realNow() + skew;
-async function syncClock() {
-  try {
-    const r = await fetch("https://speech.platform.bing.com/", {method: "HEAD", signal: AbortSignal.timeout(5000)});
-    const d = Date.parse(r.headers.get("date"));
-    if (Number.isFinite(d)) {
-      const off = d - realNow();
-      skew = Math.abs(off) > 2000 ? off : 0;
-      console.log(`[voice] PC clock is ${(-off / 1000).toFixed(1)}s ${off > 0 ? "behind" : "ahead of"} Microsoft${skew ? " (corrected)" : ""}`);
-    }
-  } catch (e) {
-    console.warn("[voice] clock check failed:", e.message);
-  }
-}
+// TTS_PROVIDER in .env: "auto" (default: Microsoft voice first, Gemini voice as backup),
+// "edge" (Microsoft only) or "gemini" (Gemini only: one consistent voice for the whole ad).
+const MODE = (process.env.TTS_PROVIDER || "auto").toLowerCase();
+const GEMINI_TTS_MODELS = (process.env.GEMINI_TTS_MODELS || "gemini-3.8-flash-lite-tts,gemini-3.8-flash-tts")
+  .split(",").map((s) => s.trim()).filter(Boolean);
+const GEMINI_FEMALE = process.env.GEMINI_VOICE_FEMALE || "Kore";
+const GEMINI_MALE = process.env.GEMINI_VOICE_MALE || "Charon";
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+let ai;
+const getAi = () => (ai ||= new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY}));
 
 // Exact duration of an MP3 by walking its frames (no size/bitrate guessing).
 // Returns 0 if the file cannot be parsed.
@@ -62,32 +56,104 @@ function speechSpan(subPath, fileSecs) {
   }
 }
 
-// Returns {lead, secs}. Audio plays from 0 (no lead trimming); only trailing silence is cut.
-async function makeVoice(text, voice, outPath) {
+// Duration of a WAV file from its header.
+function wavSecs(buf) {
+  if (buf.length < 44 || buf.toString("latin1", 0, 4) !== "RIFF") return buf.length / 48000;
+  let pos = 12, byteRate = 48000;
+  while (pos + 8 <= buf.length) {
+    const id = buf.toString("latin1", pos, pos + 4), size = buf.readUInt32LE(pos + 4);
+    if (id === "fmt ") byteRate = buf.readUInt32LE(pos + 16) || byteRate;
+    if (id === "data") return Math.min(size, buf.length - pos - 8) / byteRate;
+    pos += 8 + size + (size & 1);
+  }
+  return buf.length / 48000;
+}
+
+// Microsoft Edge voice. Writes <base>.mp3
+async function edgeVoice(text, voice, base, tries) {
+  const out = `${base}.mp3`, subPath = `${out}.json`;
   const lang = voice.split("-").slice(0, 2).join("-");
-  const subPath = `${outPath}.json`;
   let lastErr;
-  if (!makeVoice.synced) { makeVoice.synced = true; await syncClock(); }
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < tries; i++) {
     try {
-      if (i) await new Promise((r) => setTimeout(r, 2000 * i + Math.random() * 500));
+      if (i) await sleep(1500 * i + Math.random() * 500);
       const tts = new EdgeTTS({voice, lang, outputFormat: FORMAT, saveSubtitles: true});
-      fs.rmSync(outPath, {force: true});
+      fs.rmSync(out, {force: true});
       fs.rmSync(subPath, {force: true});
-      await tts.ttsPromise(text, outPath);
-      const buf = fs.readFileSync(outPath);
+      await tts.ttsPromise(text, out);
+      const buf = fs.readFileSync(out);
       if (buf.length < 2000) throw new Error("TTS returned an empty/short file");
       const fileSecs = mp3Seconds(buf) || buf.length / (48000 / 8);
       const span = speechSpan(subPath, fileSecs);
-      console.log(`[voice] ${outPath.split(/[\\/]/).pop()}: file ${fileSecs.toFixed(2)}s, speech ends ${span ? span.last.toFixed(2) : "unknown"}s`);
-      return {lead: 0, secs: span ? Math.min(fileSecs, span.last + 0.1) : fileSecs};
+      console.log(`[voice] edge ${out.split(/[\\/]/).pop()}: ${fileSecs.toFixed(2)}s`);
+      return {file: out, lead: 0, secs: span ? Math.min(fileSecs, span.last + 0.1) : fileSecs};
     } catch (e) {
       lastErr = e;
-      console.warn(`[voice] attempt ${i + 1} failed: ${e.message}`);
-      if (/403/.test(e.message)) await syncClock();
+      fs.rmSync(out, {force: true});
+      console.warn(`[voice] edge attempt ${i + 1}/${tries} failed: ${e.message}`);
     }
   }
   throw lastErr;
 }
 
-module.exports = {makeVoice, mp3Seconds};
+// Gemini voice (Interactions API). Writes <base>.wav
+async function geminiVoice(text, voice, base) {
+  const out = `${base}.wav`;
+  const name = /Aria|Ezinne|Jenny|Sonia|Libby/i.test(voice) ? GEMINI_FEMALE : GEMINI_MALE;
+  let lastErr;
+  for (const model of GEMINI_TTS_MODELS) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        const it = await getAi().interactions.create({
+          model,
+          input: [{type: "user_input", content: [{type: "text", text}]}],
+          response_format: {type: "audio"},
+          generation_config: {speech_config: [{voice: name}]},
+        });
+        const b64 = it.output_audio?.data ||
+          (it.steps || []).flatMap((s) => s.content || []).filter((c) => c.type === "audio").pop()?.data;
+        if (!b64) throw new Error("Gemini TTS returned no audio");
+        const buf = Buffer.from(b64, "base64");
+        if (buf.length < 2000) throw new Error("Gemini TTS returned a very short file");
+        fs.writeFileSync(out, buf);
+        const secs = wavSecs(buf);
+        console.log(`[voice] gemini(${model}, ${name}) ${out.split(/[\\/]/).pop()}: ${secs.toFixed(2)}s`);
+        return {file: out, lead: 0, secs: secs + 0.05};
+      } catch (e) {
+        lastErr = e;
+        const st = e.status ?? e.code;
+        console.warn(`[voice] gemini ${model} attempt ${i + 1} failed: ${String(e.message).slice(0, 180)}`);
+        if (st === 404 || st === 400 || st === 401 || st === 403) break; // wrong model/key: try the next model
+        await sleep(2000 * 2 ** i); // 429 / 503: back off and retry
+      }
+    }
+  }
+  throw lastErr;
+}
+
+let edgeDownUntil = 0;
+
+// Returns {file, lead, secs}. `base` has no extension: the provider adds .mp3 or .wav
+async function makeVoice(text, voice, base) {
+  const order =
+    MODE === "gemini" ? ["gemini"]
+    : MODE === "edge" ? ["edge"]
+    : Date.now() < edgeDownUntil ? ["gemini", "edge"] : ["edge", "gemini"];
+  let lastErr;
+  for (const p of order) {
+    try {
+      const r = p === "edge" ? await edgeVoice(text, voice, base, MODE === "edge" ? 6 : 2) : await geminiVoice(text, voice, base);
+      if (p === "edge") edgeDownUntil = 0;
+      return r;
+    } catch (e) {
+      lastErr = e;
+      if (p === "edge" && MODE === "auto") {
+        edgeDownUntil = Date.now() + 10 * 60 * 1000; // stop hammering Microsoft for a while
+        console.warn("[voice] Microsoft voice unavailable, switching to the Gemini voice");
+      }
+    }
+  }
+  throw lastErr;
+}
+
+module.exports = {makeVoice, mp3Seconds, wavSecs};
